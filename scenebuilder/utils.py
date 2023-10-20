@@ -1,11 +1,18 @@
+import sys
+# sys.path.append('/Users/adriandelser/Desktop/ENAC/')
+# sys.path.append('/Users/adriandelser/Desktop/ENAC/gflow')
+# sys.path.append('/Users/adriandelser/Desktop/ENAC/gflow/examples')
+
+# import gflow_local
+
 import numpy as np
 from numpy.typing import ArrayLike
-from src.cases import Case, Cases
-from src.building import Building
-from src.vehicle import Vehicle
-from gui.entities import Drone, Obstacle
-from src.utils.simulation_utils import run_simulation
-from src.utils.plot_utils import PlotTrajectories
+from gflow_local.cases import Case, Cases
+from gflow_local.building import Building
+from gflow_local.vehicle import Vehicle
+from gflow_local.utils.simulation_utils import run_simulation
+from gflow_local.utils.plot_utils import PlotTrajectories
+from scenebuilder.entities import Drone, Obstacle
 
 
 def distance_between_points(p1: ArrayLike, p2: ArrayLike) -> float:

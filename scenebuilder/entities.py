@@ -1,4 +1,4 @@
-from gui.mixins import ClickableMixin
+from scenebuilder.mixins import ClickableMixin
 from matplotlib.patches import Polygon
 from numpy.typing import ArrayLike
 from typing import List

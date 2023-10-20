@@ -1,4 +1,8 @@
 from __future__ import annotations
+import sys
+sys.path.append(".")
+
+# import gflow_local
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,13 +12,18 @@ from numpy.typing import ArrayLike
 from matplotlib.lines import Line2D
 from typing import List, Dict
 
-from gui.entities import Drone, Obstacle
-from gui.patches import Marker, DronePatch, ObstaclePatch
-from gui.utils import distance_between_points, generate_case, run_case
-from gui.construction import Creator, PatchManager
-from gui.actions_stack import ActionsStack
-from gui.ui_components import UIComponents
-from gui.observer_utils import Observer
+# -*- coding: utf-8 -*-
+import os
+print("Current Directory:", os.getcwd())
+
+
+from scenebuilder.entities import Drone, Obstacle
+from scenebuilder.patches import Marker, DronePatch, ObstaclePatch
+from scenebuilder.utils import distance_between_points, generate_case, run_case
+from scenebuilder.construction import Creator, PatchManager
+from scenebuilder.actions_stack import ActionsStack
+from scenebuilder.ui_components import UIComponents
+from scenebuilder.observer_utils import Observer
 
 class InteractivePlot(Observer):
 

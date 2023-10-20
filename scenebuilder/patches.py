@@ -5,8 +5,8 @@ from matplotlib.patches import FancyArrow, Polygon
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
-from gui.mixins import ClickableMixin
-from gui.entities import Drone, Obstacle
+from scenebuilder.mixins import ClickableMixin
+from scenebuilder.entities import Drone, Obstacle
 
 
 class Arrow:

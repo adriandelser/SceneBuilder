@@ -1,9 +1,9 @@
-from gui.patches import ObstaclePatch, DronePatch
+from scenebuilder.patches import ObstaclePatch, DronePatch
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.lines import Line2D
 from typing import List
-from gui.entities import Obstacle, Drone
+from scenebuilder.entities import Obstacle, Drone
 import numpy as np
 
 
