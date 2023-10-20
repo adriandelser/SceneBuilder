@@ -1,7 +1,7 @@
 from __future__ import annotations
 # from gui.gui_sim import InteractivePlot
 import matplotlib.pyplot as plt
-from scenebuilder.observer_utils import Observable, Observer
+from observer_utils import Observable, Observer
 
 
 
