@@ -1,26 +1,26 @@
 from __future__ import annotations
 
 #FIXME these two lines are necessary because sometimes the imports don't work
-import sys
-sys.path.append(".")
+# import sys
+# sys.path.append(".")
 
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import ArrayLike
 
 # from src.utils.simulation_utils import run_simulation, set_new_attribute
-from matplotlib.lines import Line2D
-from typing import List, Dict
+# from matplotlib.lines import Line2D
+# from typing import List, Dict
 
 from entities import Drone, Obstacle
-from patches import Marker, DronePatch, ObstaclePatch
+from patches import Marker
 from utils import distance_between_points, generate_case, run_case
 from construction import PatchManager
 from actions_stack import ActionsStack
 from ui_components import UIComponents
 from observer_utils import Observer
 
-class InteractivePlot(Observer):
+class InteractivePlot:
 
     CLICK_THRESHOLD = 0.14
     FIG_SIZE = (8, 8)
@@ -95,7 +95,6 @@ class InteractivePlot(Observer):
 
     def handle_vertex_movement(self, event):
         """Returns True if a click is near a vertex of an obstacle"""
-        print(self.buildings)
         if not self.buildings:
             return False
 
@@ -275,10 +274,8 @@ class InteractivePlot(Observer):
         self.update()
 
     def on_pick(self, event):
-        print("picked")
         # Check if the picked artist is a Polygon (optional but can be useful)
         if not isinstance(event.artist, plt.Polygon):
-            print("early return")
             return
         # polygon = event.artist
         building = self.patch_manager.get_building_from_patch(event.artist)

@@ -100,7 +100,6 @@ class PatchManager:
         self._remove_markers_from_list(self.temp_drone_starts)
 
     def clear_building_vertices(self):
-        print(self.current_building_vertices)
         self._remove_markers_from_list(self.current_building_vertices)
 
     def clear_all(self):
