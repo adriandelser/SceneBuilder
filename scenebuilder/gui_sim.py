@@ -21,7 +21,7 @@ from construction import PatchManager
 from actions_stack import ActionsStack
 from ui_components import UIComponents
 from observer_utils import Observer
-
+from threading import Timer
 class InteractivePlot:
 
     CLICK_THRESHOLD = 0.14
@@ -82,8 +82,18 @@ class InteractivePlot:
         self.selected_drone: Drone = None
         self.initial_click_position = None
         self.selected_vertex = None
+        self.warning = self.ax.annotate('WARNING, No Drones!',
+                xy=(0.5, 0.5), xycoords='axes fraction',
+                fontsize=12, fontweight='bold', color='red',
+                ha='center')
+            
+        self.warning.set_visible(False)  # Start with warning hidden
+
 
         return None
+    def hide_warning(self):
+        self.warning.set_visible(False)
+        self.update()
 
     def connect_event_handlers(self) -> None:
 
@@ -381,13 +391,32 @@ class InteractivePlot:
 
     def run(self):
         # self.ui_components.btn_run.label.set_text("Running")
-        self.update()
-        case = generate_case(
-                name="Test Case", buildings=self.buildings, drones=self.drones
-            )
-        run_case(case)
+        # self.update()
+        if not self.drones:
+            print("Make sure to have at least one drone")
+            # self.warning = self.ax.annotate('WARNING, No Drones!',
+            #     xy=(0.5, 0.5), xycoords='axes fraction',
+            #     fontsize=12, fontweight='bold', color='red',
+            #     ha='center')
+            # Show warning initially
+            self.warning.set_visible(True)  # Start with warning hidden
+            # Set a timer to hide the warning after 2 seconds
+            t = Timer(2, self.hide_warning)
+            t.start()
+            
+
+            self.update()
+        else:
+            case = generate_case(
+                    name="Test Case", buildings=self.buildings, drones=self.drones
+                )
+            run_case(case)
+    
+        
+
+        
         # self.ui_components.btn_run.label.set_text("Run")
-        self.update()
+        # self.update()
 
     def update(self):
         # draw the canvas again
