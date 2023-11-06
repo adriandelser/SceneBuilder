@@ -11,18 +11,18 @@ class UIComponents(Observable):
         self.ax = ax
         self.fig = ax.figure
         self.ax_build = self.fig.add_axes(
-            [0.01, 0.01, 0.15, 0.05]
+            [0.01, 0.01, 0.20, 0.05]
         )  # Position of 'Build Mode' button
         self.ax_run = self.fig.add_axes(
-            [0.17, 0.01, 0.1, 0.05]
+            [0.22, 0.01, 0.1, 0.05]
         )  # Position of 'Drone Mode' button
-        self.ax_reset = self.fig.add_axes([0.28, 0.01, 0.1, 0.05])  # Position of 'Reset' button
+        self.ax_reset = self.fig.add_axes([0.33, 0.01, 0.1, 0.05])  # Position of 'Reset' button
 
-        self.btn_build = plt.Button(self.ax_build, "Switch Mode")
+        self.btn_switch = plt.Button(self.ax_build, "Switch to Drones")
         self.btn_run = plt.Button(self.ax_run, "Run")
         self.btn_reset = plt.Button(self.ax_reset, "Reset")
 
-        self.btn_build.on_clicked(self.on_build_mode)
+        self.btn_switch.on_clicked(self.on_build_mode)
         self.btn_run.on_clicked(self.on_run)
         self.btn_reset.on_clicked(self.on_reset)
 

@@ -380,10 +380,14 @@ class InteractivePlot:
             self.run()
 
     def run(self):
+        # self.ui_components.btn_run.label.set_text("Running")
+        self.update()
         case = generate_case(
                 name="Test Case", buildings=self.buildings, drones=self.drones
             )
         run_case(case)
+        # self.ui_components.btn_run.label.set_text("Run")
+        self.update()
 
     def update(self):
         # draw the canvas again
@@ -421,14 +425,21 @@ class InteractivePlot:
         """
         if event.key == "d":
             self.mode = "drone"
+            self.ui_components.btn_switch.label.set_text("Switch to Buildings")
         elif event.key == "b":
             self.mode = "building"
+            self.ui_components.btn_switch.label.set_text("Switch to Drones")
+        self.update()
     
     def toggle_mode(self):
         if self.mode == "building":
             self.mode = "drone"
+            self.ui_components.btn_switch.label.set_text("Switch to Buildings")
+
         elif self.mode == "drone":
             self.mode = "building"
+            self.ui_components.btn_switch.label.set_text("Switch to Drones")
+        self.update()
 
     def finalize_building(self):
         building = self.patch_manager.make_building()
