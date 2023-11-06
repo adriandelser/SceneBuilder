@@ -2,11 +2,11 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 
-from gflow_local.cases import Case, Cases
-from gflow_local.building import Building
-from gflow_local.vehicle import Vehicle
-from gflow_local.utils.simulation_utils import run_simulation
-from gflow_local.utils.plot_utils import PlotTrajectories
+from gflow.cases import Case, Cases
+from gflow.building import Building
+from gflow.vehicle import Vehicle
+from gflow.utils.simulation_utils import run_simulation
+from gflow.utils.plot_utils import PlotTrajectories
 from entities import Drone, Obstacle
 
 
@@ -17,12 +17,17 @@ def distance_between_points(p1: ArrayLike, p2: ArrayLike) -> float:
     p1, p2 = np.array(p1), np.array(p2)
     return np.linalg.norm(p1 - p2)
 
+#### TODO The methods below should potentially be removed from this project and lie in gflow or whichever path planning algorithm is being called
+#### This project should just output the case, with the list of buildings and drones, and then the path planning algorithm should be called
+#### This is just a temporary solution to get the gui working
+
+
 
 def generate_case(name: str, buildings: list[Obstacle], drones: list[Drone]) -> Case:
     height = 1.2
     # this line adds a third dimension to the x,y coordinates of the building patches and creates a building object from each patch
 
-    buildings = [
+    buildings = [ 
         Building(
             np.hstack(
                 [
@@ -53,6 +58,7 @@ def generate_case(name: str, buildings: list[Obstacle], drones: list[Drone]) -> 
     generator.update_json()
 
     complete_case = generator.get_case("gui_testing.json", "Test Case")
+    complete_case.max_avoidance_distance = 3
     return complete_case
 
 
@@ -63,7 +69,7 @@ def run_case(case: Case):
         t=2000,
         update_every=update_every,
         stop_at_collision=False,
-        max_avoidance_distance=20,
+        max_avoidance_distance=case.max_avoidance_distance,
     )
     asdf = PlotTrajectories(case, update_every=update_every)
     # asdf = plt_utils.plot_trajectories(my_case) # Old plot

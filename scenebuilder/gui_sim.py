@@ -5,6 +5,8 @@ from __future__ import annotations
 # sys.path.append(".")
 
 import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+
 import numpy as np
 from numpy.typing import ArrayLike
 
@@ -441,6 +443,8 @@ class InteractivePlot:
     def plot_setup(self):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
+
+        
         fig.subplots_adjust(bottom=0.1, top=0.9)
 
         ax.set_xlim(self.AXIS_LIMITS)
@@ -471,6 +475,18 @@ class InteractivePlot:
         )
 
         self.fig, self.ax = fig, ax
+
+        # ax2 = ax.twinx()  # create a twin y-axis that shares the same x-axis
+
+        # # plot map on ax1
+        # m = Basemap(projection='merc', llcrnrlat=-60, urcrnrlat=80, llcrnrlon=-180, urcrnrlon=180, resolution='c', ax=ax2)
+        # m.drawcoastlines(zorder=-10)
+        # m.drawcountries(zorder=-10)
+        # m.drawmapboundary(fill_color='aqua',zorder=-10)
+        # m.fillcontinents(color='coral',lake_color='aqua',zorder=-10)
+
+        
+
         return None
     
     def call(self, event: str, *args, **kwargs):

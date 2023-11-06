@@ -2,7 +2,6 @@ from typing import List, Callable
 
 # Define the Observer interface. This class is an example that could be inherited,
 # alternatively define your own call function in the Observable class, such as in InteractivePlot
-
 class Observer:
     def call(self, event: str, *args, **kwargs):
         raise NotImplementedError
