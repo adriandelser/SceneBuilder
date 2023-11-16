@@ -675,44 +675,29 @@
             }
         ]
     },
-    "Test Case": {
+    "bug_stuck": {
         "buildings": [
             {
                 "ID": "Building 0",
                 "vertices": [
                     [
-                        -0.91129,
-                        2.588709,
+                        -1.467741,
+                        -3.491935,
                         1.2
                     ],
                     [
-                        -0.927419,
-                        -0.209677,
+                        -0.459677,
+                        -0.782258,
                         1.2
                     ],
                     [
-                        -0.282258,
-                        -0.209677,
-                        1.2
-                    ]
-                ]
-            },
-            {
-                "ID": "Building 1",
-                "vertices": [
-                    [
-                        -0.016129,
-                        -2.137096,
+                        -3.137096,
+                        -2.330645,
                         1.2
                     ],
                     [
-                        -2.209677,
-                        -0.870967,
-                        1.2
-                    ],
-                    [
-                        -2.25,
-                        -2.193548,
+                        -3.137096,
+                        -3.999999,
                         1.2
                     ]
                 ]
@@ -722,13 +707,278 @@
             {
                 "ID": "V0",
                 "position": [
-                    -2.338709677419355,
-                    0.314516129032258,
+                    -2.483870967741936,
+                    0.10483870967741993,
                     0.5
                 ],
                 "goal": [
-                    0.1854838709677411,
-                    1.137096774193549,
+                    2.451612903225806,
+                    0.19354838709677402,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V1",
+                "position": [
+                    -2.709677419354839,
+                    1.080645161290323,
+                    0.5
+                ],
+                "goal": [
+                    2.475806451612902,
+                    0.5,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V2",
+                "position": [
+                    -2.645161290322581,
+                    1.806451612903226,
+                    0.5
+                ],
+                "goal": [
+                    2.370967741935484,
+                    -0.29032258064516103,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V3",
+                "position": [
+                    2.346774193548386,
+                    1.685483870967742,
+                    0.5
+                ],
+                "goal": [
+                    -1.370967741935484,
+                    -0.725806451612903,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V4",
+                "position": [
+                    -1.233870967741936,
+                    -0.8629032258064511,
+                    0.5
+                ],
+                "goal": [
+                    2.04032258064516,
+                    2.088709677419356,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V5",
+                "position": [
+                    1.137096774193548,
+                    2.209677419354838,
+                    0.5
+                ],
+                "goal": [
+                    0.637096774193548,
+                    -0.669354838709677,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V6",
+                "position": [
+                    0.5322580645161281,
+                    -1.209677419354838,
+                    0.5
+                ],
+                "goal": [
+                    0.6129032258064511,
+                    2.67741935483871,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V7",
+                "position": [
+                    -1.088709677419355,
+                    3.524193548387096,
+                    0.5
+                ],
+                "goal": [
+                    0.854838709677419,
+                    -3.943548387096774,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V8",
+                "position": [
+                    0.669354838709677,
+                    -3.911290322580645,
+                    0.5
+                ],
+                "goal": [
+                    -0.08870967741935498,
+                    3.75,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V9",
+                "position": [
+                    -2.451612903225807,
+                    -0.693548387096774,
+                    0.5
+                ],
+                "goal": [
+                    1.580645161290322,
+                    -2.048387096774193,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V10",
+                "position": [
+                    1.008064516129032,
+                    -2.4596774193548385,
+                    0.5
+                ],
+                "goal": [
+                    -2.129032258064517,
+                    -0.508064516129032,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            }
+        ]
+    },
+    "Test Case": {
+        "buildings": [],
+        "vehicles": [
+            {
+                "ID": "V0",
+                "position": [
+                    -3.919354838709678,
+                    0.024193548387096975,
+                    0.5
+                ],
+                "goal": [
+                    3.983870967741934,
+                    0.04032258064516192,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V1",
+                "position": [
+                    4.04032258064516,
+                    -0.16129032258064502,
+                    0.5
+                ],
+                "goal": [
+                    -3.991935483870968,
+                    0.22580645161290303,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V2",
+                "position": [
+                    0.016129032258064058,
+                    3.951612903225806,
+                    0.5
+                ],
+                "goal": [
+                    0.04032258064516103,
+                    -4.064516129032258,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            },
+            {
+                "ID": "V3",
+                "position": [
+                    -0.1290322580645169,
+                    -4.07258064516129,
+                    0.5
+                ],
+                "goal": [
+                    0.13709677419354804,
+                    3.959677419354838,
+                    0.5
+                ],
+                "source_strength": 1,
+                "imag_source_strength": 0.5,
+                "sink_strength": 5,
+                "safety": null
+            }
+        ]
+    },
+    "my_case": {
+        "buildings": [],
+        "vehicles": [
+            {
+                "ID": "V0",
+                "position": [
+                    -1.0000000000000009,
+                    2.0,
+                    0.5
+                ],
+                "goal": [
+                    2.96774193548387,
+                    2.024193548387096,
                     0.5
                 ],
                 "source_strength": 1,

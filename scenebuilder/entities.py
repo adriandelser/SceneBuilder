@@ -1,4 +1,3 @@
-from mixins import ClickableMixin
 from matplotlib.patches import Polygon
 from numpy.typing import ArrayLike
 from typing import List
@@ -20,7 +19,7 @@ class Entity:
         return np.linalg.norm(self.position - p)
 
 
-class Drone(Entity, ClickableMixin):
+class Drone(Entity):
     """Class containing all necessary information about a Drone Entity, not including its graphics"""
 
     def __init__(self, ID, position, goal):
@@ -69,11 +68,11 @@ class Drone(Entity, ClickableMixin):
         return False
 
 
-class Obstacle:
+class Obstacle(Entity):
     """Class containing all necessary information about a Building Entity, not including its graphics"""
 
     def __init__(self, vertices: ArrayLike):
-        # self.vertices = vertices
+        super().__init__(ID = "building", position=None)
         self.vertices = self.sort_vertices(vertices)
 
     def sort_vertices(self, vertices):

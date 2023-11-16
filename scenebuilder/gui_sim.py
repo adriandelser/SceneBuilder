@@ -1,34 +1,33 @@
 from __future__ import annotations
 
-#FIXME these two lines are necessary because sometimes the imports don't work
-# import sys
-# sys.path.append(".")
 
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap
 
 import numpy as np
 from numpy.typing import ArrayLike
 
-# from src.utils.simulation_utils import run_simulation, set_new_attribute
-# from matplotlib.lines import Line2D
-# from typing import List, Dict
 
-from entities import Drone, Obstacle
-from patches import Marker
-from utils import distance_between_points, generate_case, run_case
-from construction import PatchManager
-from actions_stack import ActionsStack
-from ui_components import UIComponents
-from observer_utils import Observer
+
+from scenebuilder.entities import Drone, Obstacle
+# from patches import Marker
+from scenebuilder.utils import distance_between_points, generate_case, run_case
+from scenebuilder.construction import PatchManager
+from scenebuilder.actions_stack import ActionsStack
+from scenebuilder.ui_components import UIComponents
+from scenebuilder.observer_utils import Observer, Observable
 from threading import Timer
-class InteractivePlot:
+
+
+
+class InteractivePlot(Observer,Observable):
 
     CLICK_THRESHOLD = 0.14
     FIG_SIZE = (8, 8)
     AXIS_LIMITS = (-5, 5)
 
     def __init__(self):
+        #initialise Observable (Observer has no init)
+        super().__init__()
         self._selected_building: Obstacle = None
         self.original_colors: dict = {}
         # Setup the default plot
@@ -37,8 +36,9 @@ class InteractivePlot:
         self.setup_data()
         # Connect event handlers
         self.connect_event_handlers()
+        
 
-
+    def draw_scene(self):
         plt.show()
 
     @property
@@ -75,7 +75,6 @@ class InteractivePlot:
         self.buildings: list[Obstacle] = []
         self.current_drone = None
         self.mode = "building"  # 'building', 'drone', or None
-        self.drone_start = None
         self.actions_stack = ActionsStack()  # New line to track the actions
 
 
@@ -177,14 +176,11 @@ class InteractivePlot:
     def handle_building_placement(self, event) -> None:
         self.selected_building = None
         if self.current_drone:
-            self.patch_manager.remove_temp_drone_start(self.drone_start)
+            self.patch_manager.remove_temp_drone_start()
             self.current_drone = None
         # Add a corner to the current building at the click location
-
-        point = Marker((event.xdata, event.ydata), "go").create_marker()
-
-        # self.current_building_points.append(point)
-        self.patch_manager.add_building_vertex(point)
+        # plot the point in the patch manager
+        self.patch_manager.add_building_vertex((event.xdata, event.ydata))
         self.update()
         return None
 
@@ -202,11 +198,7 @@ class InteractivePlot:
                 ID=f"V{len(self.drones)}", position=None, goal=None
             )
             self.current_drone.position = [event.xdata, event.ydata, 0.5]
-
-            self.drone_start = Marker(
-                self.current_drone.position[:2], style="ko"
-            ).create_marker()
-            self.patch_manager.add_temp_drone_start(self.drone_start)
+            self.patch_manager.add_temp_drone_start(self.current_drone.position[:2])
             self.update()
         else:
             # drone initial position is already defined, now add the destination (goal)
@@ -215,8 +207,7 @@ class InteractivePlot:
 
             self.drones.append(self.current_drone)
             self.actions_stack.add_action("drone", self.current_drone)
-            self.patch_manager.remove_temp_drone_start(self.drone_start)
-            self.drone_start = None
+            self.patch_manager.remove_temp_drone_start()
 
 
             # add drone patch to patch_manager
@@ -424,7 +415,7 @@ class InteractivePlot:
 
     def clear_temp_elements(self):
 
-        self.patch_manager.clear_temp_drone_starts()
+        self.patch_manager.remove_temp_drone_start()
         self.patch_manager.clear_building_vertices()
 
         self.current_drone = None
@@ -448,27 +439,33 @@ class InteractivePlot:
 
         self.update()
 
-    def switch_mode(self, event):
+    def switch_mode(self, event=None):
         """
-        Switch between building and drone placement modes
+        Switch between building and drone placement modes.
+        If an event is provided and the key is 'd' or 'b', switch to the respective mode.
+        If no event is provided, toggle between modes.
         """
-        if event.key == "d":
-            self.mode = "drone"
-            self.ui_components.btn_switch.label.set_text("Switch to Buildings")
-        elif event.key == "b":
-            self.mode = "building"
-            self.ui_components.btn_switch.label.set_text("Switch to Drones")
-        self.update()
-    
-    def toggle_mode(self):
-        if self.mode == "building":
-            self.mode = "drone"
-            self.ui_components.btn_switch.label.set_text("Switch to Buildings")
+        # If an event is provided, check the key and switch mode accordingly
+        if event:
+            if event.key == "d":
+                new_mode = "drone"
+            elif event.key == "b":
+                new_mode = "building"
+            else:
+                # If the key is not 'd' or 'b', do not switch the mode
+                return
+        else:
+            # No event provided, toggle the mode
+            new_mode = "drone" if self.mode == "building" else "building"
 
-        elif self.mode == "drone":
-            self.mode = "building"
-            self.ui_components.btn_switch.label.set_text("Switch to Drones")
+        # Set the new mode and update the button label
+        self.mode = new_mode
+        switch_label = "Switch to Buildings" if self.mode == "drone" else "Switch to Drones"
+        self.ui_components.rename_button(button_key="switch", new_label=switch_label)
+
+        # Call the update method
         self.update()
+
 
     def finalize_building(self):
         building = self.patch_manager.make_building()
@@ -530,12 +527,19 @@ class InteractivePlot:
         return None
     
     def call(self, event: str, *args, **kwargs):
-        if event == "build_mode":
-            self.toggle_mode()
+        if event == "switch_mode":
+            self.switch_mode()
         elif event == "reset":
             self.reset()
         elif event == "run":
             self.run()
+        elif event == "generate_case":
+            case = generate_case(name="my_case", buildings=self.buildings, drones = self.drones)
+            #return the case to whichever application might be interested
+            # the event is generate_case
+            # plt.close()
+            self.notify_observers(event, case)
+            
 
     def reset(self):
         self.selected_building = None
@@ -558,6 +562,7 @@ if __name__ == "__main__":
     # Example usage:
 
     plot = InteractivePlot()
+    plot.draw_scene()
     print("done")
 
 

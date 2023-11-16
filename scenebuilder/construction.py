@@ -1,12 +1,12 @@
-from patches import ObstaclePatch, DronePatch
 import matplotlib.pyplot as plt
 # from matplotlib.patches import Marker
 from matplotlib.lines import Line2D
 from typing import List
-from entities import Obstacle, Drone
+from scenebuilder.entities import Obstacle, Drone
 import numpy as np
-
-import pyclipper
+from scenebuilder.patches import ObstaclePatch, DronePatch
+from scenebuilder.patches import Marker
+# import pyclipper
 
 
 class PatchManager:
@@ -14,8 +14,9 @@ class PatchManager:
         self.ax = ax
         self.building_patches:dict[Obstacle, ObstaclePatch]  = {}
         self.drone_patches:dict[Drone, DronePatch] = {}
-        self.temp_drone_starts:list[Line2D] = []
+        # self.temp_drone_starts:list[Line2D] = []
         self.current_building_vertices:list[Line2D] = []
+        self.drone_start = None
 
     def add_building_patch(self, building: Obstacle, **kwargs)->None:
         patch = ObstaclePatch(
@@ -29,8 +30,9 @@ class PatchManager:
         self.ax.add_patch(patch)
         self.building_patches[building] = patch
     
-    def add_building_vertex(self,vertex:Line2D)->None:
-        self.current_building_vertices.append(vertex)
+    def add_building_vertex(self,vertex:tuple)->None:
+        point = Marker(vertex, "go").create_marker()
+        self.current_building_vertices.append(point)
 
     def get_building_patch(self,building:Obstacle)->ObstaclePatch:
         '''Obtains the patch for the building passed as argument
@@ -58,6 +60,12 @@ class PatchManager:
         self.add_building_patch(building)
         self.clear_building_vertices()
         return building
+    
+    def make_drone(self)->Drone:
+        return Drone(
+                ID=f"V{len(self.drones)}", position=None, goal=None
+            )
+
 
         
     def add_drone_patch(self, drone: Drone, **kwargs)->None:
@@ -66,12 +74,16 @@ class PatchManager:
         patches = drone_patch.create_patches()
         self.drone_patches[drone] = drone_patch
 
-    def add_temp_drone_start(self, element)->None:
-        self.temp_drone_starts.append(element)
+    def add_temp_drone_start(self, point:list)->None:
+        # self.temp_drone_starts.append(point)
+        self.drone_start = Marker(
+                point, style="ko"
+            ).create_marker()
 
-    def remove_temp_drone_start(self,element:Line2D)->None:
-        self.temp_drone_starts.remove(element)
-        element.remove()
+    def remove_temp_drone_start(self)->None:
+        if self.drone_start:
+            self.drone_start.remove()
+            self.drone_start = None
     
     def _remove_markers_from_list(self, lst:List[Line2D])->None:
         for element in lst:
@@ -96,9 +108,6 @@ class PatchManager:
         '''
         self.drone_patches.pop(drone).remove()
 
-    def clear_temp_drone_starts(self):
-        self._remove_markers_from_list(self.temp_drone_starts)
-
     def clear_building_vertices(self):
         self._remove_markers_from_list(self.current_building_vertices)
 
@@ -107,9 +116,7 @@ class PatchManager:
             patch.remove()
         for patch in self.drone_patches.values():
             patch.remove()
-        for patch in self.temp_drone_starts:
-            patch.remove()
+        self.remove_temp_drone_start()
         self.building_patches.clear()
         self.drone_patches.clear()
-        self.temp_drone_starts.clear()
 

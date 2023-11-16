@@ -5,7 +5,7 @@ from gflow.utils.simulation_utils import run_simulation, set_new_attribute
 
 if __name__ == "__main__":
     file_name = "gui_testing.json"
-    case_name="implosion"
+    case_name="Test Case"
     # case = Cases.get_case(filename="bug_fixing/performance_enhancement.json", case_name="8_drones_2_buildings")
     # case = Cases.get_case(filename="bug_fixing/cases.json", case_name="ignore_arrived")
     case = Cases.get_case(filename=file_name, case_name=case_name)
@@ -22,14 +22,14 @@ if __name__ == "__main__":
     update_frequency = 50  # Hz
     update_time_period = max(int(1 / (update_frequency * delta_t)), 1)
 
-    ######################################
+    ###################################### 
     # this variable controls how many time steps occur between every communication of position
     # update_time_period = 10
     ######################################
 
     print(f"update every = {update_time_period}")
 
-    case.max_avoidance_distance = 3
+    case.max_avoidance_distance = 5
 
     start_time = time()
     result = run_simulation(

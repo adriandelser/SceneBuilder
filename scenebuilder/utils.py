@@ -7,7 +7,7 @@ from gflow.building import Building
 from gflow.vehicle import Vehicle
 from gflow.utils.simulation_utils import run_simulation
 from gflow.utils.plot_utils import PlotTrajectories
-from entities import Drone, Obstacle
+from scenebuilder.entities import Drone, Obstacle
 
 
 def distance_between_points(p1: ArrayLike, p2: ArrayLike) -> float:
@@ -57,7 +57,7 @@ def generate_case(name: str, buildings: list[Obstacle], drones: list[Drone]) -> 
     generator.add_case(c)
     generator.update_json()
 
-    complete_case = generator.get_case("gui_testing.json", "Test Case")
+    complete_case = generator.get_case("gui_testing.json", name)
     complete_case.max_avoidance_distance = 3
     return complete_case
 
