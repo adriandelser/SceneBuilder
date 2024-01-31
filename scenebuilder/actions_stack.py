@@ -3,11 +3,19 @@ class ActionsStack:
 
     def __init__(self):
         self.actions: list[tuple[str, object]] = []
+        self.building_priority: list[str] = []
+        self.drone_priority: list[str] = []
 
-    def add_action(self, action_type, action):
+    def add_action(self, action_type:str, action):
+        '''Adds action to action_stack
+        Vars:
+        action_type: "building" or "drone"
+        action: building or drone object'''
+        if action == "building":
+            pass
         self.actions.append((action_type, action))
 
-    def remove_action(self, action_type, action):
+    def remove_action(self, action_type:str, action):
         self.actions.remove((action_type, action))
 
     def retrieve_last_action(self):

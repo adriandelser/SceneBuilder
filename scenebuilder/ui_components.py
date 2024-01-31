@@ -26,6 +26,11 @@ class UIComponents(Observable):
                 'label': "Reset",
                 'callback': self.on_reset
             },
+            'create_json': {
+                'axis': self.fig.add_axes([0.44, 0.01, 0.1, 0.05]),
+                'label': "Create JSON",
+                'callback': self.on_json
+            },
             'case_generate': {
                 'axis': self.fig.add_axes([0.6, 0.01, 0.15, 0.05]),
                 'label': "Generate Case",
@@ -54,10 +59,12 @@ class UIComponents(Observable):
     def on_run(self, event):
         self.notify_observers("run")
     
+    def on_json(self, event):
+        self.notify_observers("create_json")
+    
     def on_generate(self, event):
         self.notify_observers("generate_case")
 
-    # ... existing methods ...
 
 
  

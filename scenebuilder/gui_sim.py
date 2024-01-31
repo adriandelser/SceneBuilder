@@ -10,7 +10,8 @@ from numpy.typing import ArrayLike
 
 from scenebuilder.entities import Drone, Obstacle
 # from patches import Marker
-from scenebuilder.utils import distance_between_points, generate_case, run_case
+from scenebuilder.utils import distance_between_points, generate_case, run_case, create_json
+from scenebuilder.json_utils import dump_to_json
 from scenebuilder.construction import PatchManager
 from scenebuilder.actions_stack import ActionsStack
 from scenebuilder.ui_components import UIComponents
@@ -380,16 +381,25 @@ class InteractivePlot(Observer,Observable):
 
             self.run()
 
+    def create_json(self):
+        if not self.drones:
+            # print("Make sure to have at least one drone")
+            self.warning.set_visible(True)  # Start with warning hidden
+            # Set a timer to hide the warning after 2 seconds
+            t = Timer(2, self.hide_warning)
+            t.start()
+            
+
+            self.update()
+        else:
+            create_json("scenebuilder", self.buildings,self.drones)
+            
+
     def run(self):
         # self.ui_components.btn_run.label.set_text("Running")
         # self.update()
         if not self.drones:
-            print("Make sure to have at least one drone")
-            # self.warning = self.ax.annotate('WARNING, No Drones!',
-            #     xy=(0.5, 0.5), xycoords='axes fraction',
-            #     fontsize=12, fontweight='bold', color='red',
-            #     ha='center')
-            # Show warning initially
+            # print("Make sure to have at least one drone")
             self.warning.set_visible(True)  # Start with warning hidden
             # Set a timer to hide the warning after 2 seconds
             t = Timer(2, self.hide_warning)
@@ -401,13 +411,13 @@ class InteractivePlot(Observer,Observable):
             case = generate_case(
                     name="Test Case", buildings=self.buildings, drones=self.drones
                 )
+            case.building_detection_threshold=10
             run_case(case)
     
         
 
         
-        # self.ui_components.btn_run.label.set_text("Run")
-        # self.update()
+        
 
     def update(self):
         # draw the canvas again
@@ -533,6 +543,8 @@ class InteractivePlot(Observer,Observable):
             self.reset()
         elif event == "run":
             self.run()
+        elif event == "create_json":
+            self.create_json()
         elif event == "generate_case":
             case = generate_case(name="my_case", buildings=self.buildings, drones = self.drones)
             #return the case to whichever application might be interested

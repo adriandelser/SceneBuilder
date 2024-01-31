@@ -6,12 +6,13 @@ authors = ["Adrian del Ser <adrian.delser@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
+python = ">=3.11"
 numpy = "^1.26.1"
 matplotlib = "^3.8.0"
 scipy = "^1.11.3"
 pyclipper = "^1.3.0.post5"
 shapely = "^2.0.2"
+gflow = {path = "/Users/adriandelser/Desktop/ENAC/gflow"}
 
 
 [build-system]
