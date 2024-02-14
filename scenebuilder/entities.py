@@ -22,7 +22,7 @@ class Entity:
 class Drone(Entity):
     """Class containing all necessary information about a Drone Entity, not including its graphics"""
 
-    def __init__(self, ID, position, goal):
+    def __init__(self, ID, position, goal:np.ndarray):
         super().__init__(ID, position)
         self.goal = goal
 

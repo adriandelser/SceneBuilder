@@ -16,26 +16,26 @@ class UIComponents(Observable):
                 'label': "Switch to Drones",
                 'callback': self.on_switch_mode
             },
-            'run': {
-                'axis': self.fig.add_axes([0.22, 0.01, 0.1, 0.05]),
-                'label': "Run",
-                'callback': self.on_run
-            },
+            # 'run': {
+            #     'axis': self.fig.add_axes([0.22, 0.01, 0.1, 0.05]),
+            #     'label': "Run",
+            #     'callback': self.on_run
+            # },
             'reset': {
-                'axis': self.fig.add_axes([0.33, 0.01, 0.1, 0.05]),
+                'axis': self.fig.add_axes([0.22, 0.01, 0.1, 0.05]),
                 'label': "Reset",
                 'callback': self.on_reset
             },
             'create_json': {
-                'axis': self.fig.add_axes([0.44, 0.01, 0.1, 0.05]),
+                'axis': self.fig.add_axes([0.33, 0.01, 0.15, 0.05]),
                 'label': "Create JSON",
                 'callback': self.on_json
-            },
-            'case_generate': {
-                'axis': self.fig.add_axes([0.6, 0.01, 0.15, 0.05]),
-                'label': "Generate Case",
-                'callback': self.on_generate
-            }
+            }#,
+            # 'case_generate': {
+            #     'axis': self.fig.add_axes([0.6, 0.01, 0.15, 0.05]),
+            #     'label': "Generate Case",
+            #     'callback': self.on_generate
+            # }
         }
         
         # Initialize buttons and register callbacks
@@ -56,14 +56,14 @@ class UIComponents(Observable):
     def on_reset(self, event):
         self.notify_observers("reset")
 
-    def on_run(self, event):
-        self.notify_observers("run")
+    # def on_run(self, event):
+    #     self.notify_observers("run")
     
     def on_json(self, event):
         self.notify_observers("create_json")
     
-    def on_generate(self, event):
-        self.notify_observers("generate_case")
+    # def on_generate(self, event):
+    #     self.notify_observers("generate_case")
 
 
 

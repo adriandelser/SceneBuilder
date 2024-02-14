@@ -10,8 +10,8 @@ from numpy.typing import ArrayLike
 
 from scenebuilder.entities import Drone, Obstacle
 # from patches import Marker
-from scenebuilder.utils import distance_between_points, generate_case, run_case, create_json
-from scenebuilder.json_utils import dump_to_json
+from scenebuilder.utils import distance_between_points, create_json, get_from_json
+from scenebuilder.json_utils import dump_to_json, load_from_json
 from scenebuilder.construction import PatchManager
 from scenebuilder.actions_stack import ActionsStack
 from scenebuilder.ui_components import UIComponents
@@ -39,7 +39,15 @@ class InteractivePlot(Observer,Observable):
         self.connect_event_handlers()
         
 
-    def draw_scene(self):
+    def draw_scene(self, path:str = None):
+        if path:
+            try:
+                case_info = load_from_json(path)
+                drones, buildings = get_from_json(case_info)
+                self.drones = drones
+                self.buildings = buildings
+            except Exception:
+                print("JSON format invalid, please try again")    
         plt.show()
 
     @property
@@ -198,13 +206,13 @@ class InteractivePlot(Observer,Observable):
             self.current_drone = Drone(
                 ID=f"V{len(self.drones)}", position=None, goal=None
             )
-            self.current_drone.position = [event.xdata, event.ydata, 0.5]
+            self.current_drone.position = np.array([event.xdata, event.ydata, 0.5])
             self.patch_manager.add_temp_drone_start(self.current_drone.position[:2])
             self.update()
         else:
             # drone initial position is already defined, now add the destination (goal)
             # This is the goal position of the drone
-            self.current_drone.goal = [event.xdata, event.ydata, 0.5]
+            self.current_drone.goal = np.array([event.xdata, event.ydata, 0.5])
 
             self.drones.append(self.current_drone)
             self.actions_stack.add_action("drone", self.current_drone)
@@ -392,7 +400,7 @@ class InteractivePlot(Observer,Observable):
 
             self.update()
         else:
-            create_json("scenebuilder", self.buildings,self.drones)
+            create_json("scenebuilder", self.buildings, self.drones)
             
 
     def run(self):
@@ -545,12 +553,12 @@ class InteractivePlot(Observer,Observable):
             self.run()
         elif event == "create_json":
             self.create_json()
-        elif event == "generate_case":
-            case = generate_case(name="my_case", buildings=self.buildings, drones = self.drones)
-            #return the case to whichever application might be interested
-            # the event is generate_case
-            # plt.close()
-            self.notify_observers(event, case)
+        # elif event == "generate_case":
+        #     case = generate_case(name="my_case", buildings=self.buildings, drones = self.drones)
+        #     #return the case to whichever application might be interested
+        #     # the event is generate_case
+        #     # plt.close()
+        #     self.notify_observers(event, case)
             
 
     def reset(self):
@@ -574,7 +582,7 @@ if __name__ == "__main__":
     # Example usage:
 
     plot = InteractivePlot()
-    plot.draw_scene()
+    plot.draw_scene('scenebuilder.json')
     print("done")
 
 
