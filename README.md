@@ -1,6 +1,7 @@
 # Scenebuilder
 
-Flow field guidance
+Install with pip3 install -e .
 
-To run with gui, run gui/gui_sim.py
-To run simple example, run examples/simple_sim.py and select desired case within a json case file
+Run with python3 main.py 
+
+Follow the instructions and finally create the JSON file which can be used as an input to your favourite path planning/guidance algorithm (i.e. PGFlow) 

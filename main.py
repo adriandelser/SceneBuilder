@@ -1,4 +1,8 @@
 from scenebuilder.gui_sim import InteractivePlot
 
 if __name__ == "__main__":
-    InteractivePlot()
+    # Example usage:
+
+    plot = InteractivePlot()
+    plot.draw_scene()
+    print("done")
