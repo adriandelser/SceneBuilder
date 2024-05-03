@@ -63,7 +63,7 @@ def get_from_json(case:dict)->tuple[list[Drone],list[Obstacle]]:
     vehicles = [Drone(f"V{idx}",v['position'],v['goal']) for idx,v in enumerate(vehicles)]
 
     buildings = case_info.get('buildings')
-    buildings = [Obstacle(b['vertices']) for b in buildings]
+    buildings = [Obstacle(np.array(b['vertices'])) for b in buildings]
     return vehicles, buildings
 
 # def generate_case(name: str, buildings: list[Obstacle], drones: list[Drone]) -> Case:

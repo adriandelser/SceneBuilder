@@ -40,14 +40,18 @@ class InteractivePlot(Observer,Observable):
         
 
     def draw_scene(self, path:str = None):
+        '''Draw the scene. 
+        If a json is specified, then populate the scene with the obstacles and drones in the json'''
         if path:
-            try:
-                case_info = load_from_json(path)
-                drones, buildings = get_from_json(case_info)
-                self.drones = drones
-                self.buildings = buildings
-            except Exception:
-                print("JSON format invalid, please try again")    
+            case_info = load_from_json(path)
+            drones, buildings = get_from_json(case_info)
+            self.drones = drones
+            self.buildings = buildings
+            for building in self.buildings:
+                self.patch_manager.add_building_patch(building)
+            for drone in self.drones:
+                self.patch_manager.add_drone_patch(drone)
+
         plt.show()
 
     @property
@@ -583,6 +587,8 @@ if __name__ == "__main__":
 
     plot = InteractivePlot()
     plot.draw_scene('scenebuilder.json')
+    # plot.draw_scene()
+
     print("done")
 
 

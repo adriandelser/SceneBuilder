@@ -24,7 +24,7 @@ class Drone(Entity):
 
     def __init__(self, ID, position, goal:np.ndarray):
         super().__init__(ID, position)
-        self.goal = goal
+        self.goal = np.array(goal)
 
     def is_near_goal(self, point, threshold=0.2):
         return np.linalg.norm(np.array(point) - self.goal[:2]) < threshold
@@ -73,7 +73,7 @@ class Obstacle(Entity):
 
     def __init__(self, vertices: ArrayLike):
         super().__init__(ID = "building", position=None)
-        self.vertices = self.sort_vertices(vertices)
+        self.vertices = self.sort_vertices(vertices[:,:2])
 
     def sort_vertices(self, vertices):
         '''Sorts the vertices by angle around the centre of mass of the polygon'''
