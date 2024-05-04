@@ -7,11 +7,10 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 
-
 from scenebuilder.entities import Drone, Obstacle
 # from patches import Marker
 from scenebuilder.utils import distance_between_points, create_json, get_from_json
-from scenebuilder.json_utils import dump_to_json, load_from_json
+from scenebuilder.utils import dump_to_json, load_from_json, validate_json_path
 from scenebuilder.construction import PatchManager
 from scenebuilder.actions_stack import ActionsStack
 from scenebuilder.ui_components import UIComponents
@@ -46,7 +45,7 @@ class InteractivePlot(Observer,Observable):
         plt.sca(self.ax)
 
         self.patch_manager = PatchManager(self.ax)
-
+        self.output_path = 'scenebuilder.json'
 
         self.drones: list[Drone] = []
         self.buildings: list[Obstacle] = []
@@ -67,6 +66,13 @@ class InteractivePlot(Observer,Observable):
 
         return None
     
+    def set_output_path(self, path:str)->None:
+        try:
+            validate_json_path(path)
+            self.output_path = path
+        except Exception as e:
+            print(f"Error: {e}")
+
     def load_scene(self, path:str)->None:
         '''Populates the scene with the obstacles and drones in the specified json
         path: path to compatible json file'''
@@ -79,18 +85,8 @@ class InteractivePlot(Observer,Observable):
         for drone in self.drones:
             self.patch_manager.add_drone_patch(drone)
 
-    def draw_scene(self, path:str = None):
-        '''Draw the scene. 
-        If a json is specified, then populate the scene with the obstacles and drones in the json'''
-        # if path:
-        #     case_info = load_from_json(path)
-        #     drones, buildings = get_from_json(case_info)
-        #     self.drones = drones
-        #     self.buildings = buildings
-        #     for building in self.buildings:
-        #         self.patch_manager.add_building_patch(building)
-        #     for drone in self.drones:
-        #         self.patch_manager.add_drone_patch(drone)
+    def draw_scene(self):
+        '''Draw the scene.'''
         plt.show()
 
     @property
@@ -404,6 +400,8 @@ class InteractivePlot(Observer,Observable):
 
         #     self.run()
 
+    def set_path(self, path:str)->None:
+        self.output_path = path
     def create_json(self):
         if not self.drones:
             # print("Make sure to have at least one drone")
@@ -415,7 +413,7 @@ class InteractivePlot(Observer,Observable):
 
             self.update()
         else:
-            create_json("scenebuilder", self.buildings, self.drones)
+            create_json(self.output_path, self.buildings, self.drones)
             
 
     # def run(self):
