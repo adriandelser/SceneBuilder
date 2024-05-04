@@ -38,42 +38,6 @@ class InteractivePlot(Observer,Observable):
         # Connect event handlers
         self.connect_event_handlers()
         
-
-    def draw_scene(self, path:str = None):
-        '''Draw the scene. 
-        If a json is specified, then populate the scene with the obstacles and drones in the json'''
-        if path:
-            case_info = load_from_json(path)
-            drones, buildings = get_from_json(case_info)
-            self.drones = drones
-            self.buildings = buildings
-            for building in self.buildings:
-                self.patch_manager.add_building_patch(building)
-            for drone in self.drones:
-                self.patch_manager.add_drone_patch(drone)
-
-        plt.show()
-
-    @property
-    def selected_building(self):
-        return self._selected_building
-
-    @selected_building.setter
-    def selected_building(self, new_building: Obstacle):
-        """Highlight selected building in pink or deselect it if it is already selected.
-        This function is called when a building is selected or deselected.
-        patch: ObstaclePatch
-        Return: None
-        """
-        if self._selected_building:
-            current_patch = self.patch_manager.get_building_patch(self._selected_building)
-            current_patch.deselect()
-        if new_building:
-            new_building_patch = self.patch_manager.get_building_patch(new_building)
-            new_building_patch.select()
-        self._selected_building = new_building
-        self.update()
-
     def setup_data(self) -> None:
         # self.ui_components:UIComponents = UIComponents(self.ax)
         self.ui_components = UIComponents(self.ax)
@@ -101,8 +65,55 @@ class InteractivePlot(Observer,Observable):
             
         self.warning.set_visible(False)  # Start with warning hidden
 
-
         return None
+    
+    def load_scene(self, path:str)->None:
+        '''Populates the scene with the obstacles and drones in the specified json
+        path: path to compatible json file'''
+        case_info = load_from_json(path)
+        drones, buildings = get_from_json(case_info)
+        self.drones = drones
+        self.buildings = buildings
+        for building in self.buildings:
+            self.patch_manager.add_building_patch(building)
+        for drone in self.drones:
+            self.patch_manager.add_drone_patch(drone)
+
+    def draw_scene(self, path:str = None):
+        '''Draw the scene. 
+        If a json is specified, then populate the scene with the obstacles and drones in the json'''
+        # if path:
+        #     case_info = load_from_json(path)
+        #     drones, buildings = get_from_json(case_info)
+        #     self.drones = drones
+        #     self.buildings = buildings
+        #     for building in self.buildings:
+        #         self.patch_manager.add_building_patch(building)
+        #     for drone in self.drones:
+        #         self.patch_manager.add_drone_patch(drone)
+        plt.show()
+
+    @property
+    def selected_building(self):
+        return self._selected_building
+
+    @selected_building.setter
+    def selected_building(self, new_building: Obstacle):
+        """Highlight selected building in pink or deselect it if it is already selected.
+        This function is called when a building is selected or deselected.
+        patch: ObstaclePatch
+        Return: None
+        """
+        if self._selected_building:
+            current_patch = self.patch_manager.get_building_patch(self._selected_building)
+            current_patch.deselect()
+        if new_building:
+            new_building_patch = self.patch_manager.get_building_patch(new_building)
+            new_building_patch.select()
+        self._selected_building = new_building
+        self.update()
+
+    
     def hide_warning(self):
         self.warning.set_visible(False)
         self.update()
@@ -389,9 +400,9 @@ class InteractivePlot(Observer,Observable):
         elif event.key == "escape":
             self.clear_temp_elements()
 
-        elif event.key == "enter":
+        # elif event.key == "enter":
 
-            self.run()
+        #     self.run()
 
     def create_json(self):
         if not self.drones:
@@ -407,24 +418,24 @@ class InteractivePlot(Observer,Observable):
             create_json("scenebuilder", self.buildings, self.drones)
             
 
-    def run(self):
-        # self.ui_components.btn_run.label.set_text("Running")
-        # self.update()
-        if not self.drones:
-            # print("Make sure to have at least one drone")
-            self.warning.set_visible(True)  # Start with warning hidden
-            # Set a timer to hide the warning after 2 seconds
-            t = Timer(2, self.hide_warning)
-            t.start()
+    # def run(self):
+    #     # self.ui_components.btn_run.label.set_text("Running")
+    #     # self.update()
+    #     if not self.drones:
+    #         # print("Make sure to have at least one drone")
+    #         self.warning.set_visible(True)  # Start with warning hidden
+    #         # Set a timer to hide the warning after 2 seconds
+    #         t = Timer(2, self.hide_warning)
+    #         t.start()
             
 
-            self.update()
-        else:
-            case = generate_case(
-                    name="Test Case", buildings=self.buildings, drones=self.drones
-                )
-            case.building_detection_threshold=10
-            run_case(case)
+    #         self.update()
+    #     else:
+    #         case = generate_case(
+    #                 name="Test Case", buildings=self.buildings, drones=self.drones
+    #             )
+    #         case.building_detection_threshold=10
+    #         run_case(case)
     
         
 
@@ -521,8 +532,8 @@ class InteractivePlot(Observer,Observable):
             "Instructions:\n"
             "'b': switch to building mode, click to place vertices of building\n"
             "Tab: complete a building, \n"
-            "'d': switch to drone mode, "
-            "Enter: run the simulation"
+            "'d': switch to drone mode "
+            # "Enter: run the simulation"
         )
 
         fig.text(
@@ -553,8 +564,8 @@ class InteractivePlot(Observer,Observable):
             self.switch_mode()
         elif event == "reset":
             self.reset()
-        elif event == "run":
-            self.run()
+        # elif event == "run":
+        #     self.run()
         elif event == "create_json":
             self.create_json()
         # elif event == "generate_case":
