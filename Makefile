@@ -99,4 +99,4 @@ pre-commit:
 	poetry run pre-commit run --all-files
 
 run:
-	poetry run python3 main.py
+	poetry run python3 examples/example1.py

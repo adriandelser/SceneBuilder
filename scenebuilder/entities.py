@@ -22,7 +22,7 @@ class Entity:
 class Drone(Entity):
     """Class containing all necessary information about a Drone Entity, not including its graphics"""
 
-    def __init__(self, ID, position, goal:np.ndarray):
+    def __init__(self, ID, position, goal: np.ndarray):
         super().__init__(ID, position)
         self.goal = np.array(goal)
 
@@ -72,11 +72,11 @@ class Obstacle(Entity):
     """Class containing all necessary information about a Building Entity, not including its graphics"""
 
     def __init__(self, vertices: ArrayLike):
-        super().__init__(ID = "building", position=None)
-        self.vertices = self.sort_vertices(vertices[:,:2])
+        super().__init__(ID="building", position=None)
+        self.vertices = self.sort_vertices(vertices[:, :2])
 
     def sort_vertices(self, vertices):
-        '''Sorts the vertices by angle around the centre of mass of the polygon'''
+        """Sorts the vertices by angle around the centre of mass of the polygon"""
         Xavg = np.mean(vertices[:, 0:1])
         Yavg = np.mean(vertices[:, 1:2])
         angles = np.arctan2(

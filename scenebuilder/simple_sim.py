@@ -25,7 +25,7 @@
 #     update_frequency = 50  # Hz
 #     update_time_period = max(int(1 / (update_frequency * delta_t)), 1)
 
-#     ###################################### 
+#     ######################################
 #     # this variable controls how many time steps occur between every communication of position
 #     # update_time_period = 10
 #     ######################################

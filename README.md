@@ -1,6 +1,5 @@
-# Scenebuilder
+# SceneBuilder
 
-Flow field guidance
+Matplotlib GUI to create 2D scenes with polygons as obstacles and arrows as drone paths
 
-To run with gui, run gui/gui_sim.py
-To run simple example, run examples/simple_sim.py and select desired case within a json case file
+For basic examples see examples directory

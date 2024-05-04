@@ -8,6 +8,7 @@ from numpy.typing import ArrayLike
 
 
 from scenebuilder.entities import Drone, Obstacle
+
 # from patches import Marker
 from scenebuilder.utils import distance_between_points, create_json, get_from_json
 from scenebuilder.utils import dump_to_json, load_from_json, validate_json_path
@@ -18,15 +19,14 @@ from scenebuilder.observer_utils import Observer, Observable
 from threading import Timer
 
 
-
-class InteractivePlot(Observer,Observable):
+class InteractivePlot(Observer, Observable):
 
     CLICK_THRESHOLD = 0.14
     FIG_SIZE = (8, 8)
     AXIS_LIMITS = (-5, 5)
 
     def __init__(self):
-        #initialise Observable (Observer has no init)
+        # initialise Observable (Observer has no init)
         super().__init__()
         self._selected_building: Obstacle = None
         self.original_colors: dict = {}
@@ -36,16 +36,16 @@ class InteractivePlot(Observer,Observable):
         self.setup_data()
         # Connect event handlers
         self.connect_event_handlers()
-        
+
     def setup_data(self) -> None:
         # self.ui_components:UIComponents = UIComponents(self.ax)
         self.ui_components = UIComponents(self.ax)
         self.ui_components.add_observer(self)
-        #this line makes sure the current axes are the main ones
+        # this line makes sure the current axes are the main ones
         plt.sca(self.ax)
 
         self.patch_manager = PatchManager(self.ax)
-        self.output_path = 'scenebuilder.json'
+        self.output_path = "scenebuilder.json"
 
         self.drones: list[Drone] = []
         self.buildings: list[Obstacle] = []
@@ -53,29 +53,33 @@ class InteractivePlot(Observer,Observable):
         self.mode = "building"  # 'building', 'drone', or None
         self.actions_stack = ActionsStack()  # New line to track the actions
 
-
         self.selected_drone: Drone = None
         self.initial_click_position = None
         self.selected_vertex = None
-        self.warning = self.ax.annotate('WARNING, No Drones!',
-                xy=(0.5, 0.5), xycoords='axes fraction',
-                fontsize=12, fontweight='bold', color='red',
-                ha='center')
-            
+        self.warning = self.ax.annotate(
+            "WARNING, No Drones!",
+            xy=(0.5, 0.5),
+            xycoords="axes fraction",
+            fontsize=12,
+            fontweight="bold",
+            color="red",
+            ha="center",
+        )
+
         self.warning.set_visible(False)  # Start with warning hidden
 
         return None
-    
-    def set_output_path(self, path:str)->None:
+
+    def set_output_path(self, path: str) -> None:
         try:
             validate_json_path(path)
             self.output_path = path
         except Exception as e:
             print(f"Error: {e}")
 
-    def load_scene(self, path:str)->None:
-        '''Populates the scene with the obstacles and drones in the specified json
-        path: path to compatible json file'''
+    def load_scene(self, path: str) -> None:
+        """Populates the scene with the obstacles and drones in the specified json
+        path: path to compatible json file"""
         case_info = load_from_json(path)
         drones, buildings = get_from_json(case_info)
         self.drones = drones
@@ -86,7 +90,7 @@ class InteractivePlot(Observer,Observable):
             self.patch_manager.add_drone_patch(drone)
 
     def draw_scene(self):
-        '''Draw the scene.'''
+        """Draw the scene."""
         plt.show()
 
     @property
@@ -101,7 +105,9 @@ class InteractivePlot(Observer,Observable):
         Return: None
         """
         if self._selected_building:
-            current_patch = self.patch_manager.get_building_patch(self._selected_building)
+            current_patch = self.patch_manager.get_building_patch(
+                self._selected_building
+            )
             current_patch.deselect()
         if new_building:
             new_building_patch = self.patch_manager.get_building_patch(new_building)
@@ -109,7 +115,6 @@ class InteractivePlot(Observer,Observable):
         self._selected_building = new_building
         self.update()
 
-    
     def hide_warning(self):
         self.warning.set_visible(False)
         self.update()
@@ -229,7 +234,6 @@ class InteractivePlot(Observer,Observable):
             self.actions_stack.add_action("drone", self.current_drone)
             self.patch_manager.remove_temp_drone_start()
 
-
             # add drone patch to patch_manager
             self.patch_manager.add_drone_patch(self.current_drone)
             self.current_drone = None
@@ -304,13 +308,11 @@ class InteractivePlot(Observer,Observable):
         building = self.patch_manager.get_building_from_patch(event.artist)
         self.selected_building = building
 
-
         self.initial_click_position = [event.mouseevent.xdata, event.mouseevent.ydata]
-
 
     def on_mouse_move(self, event):
 
-        # check to make sure the mouse is still in the main axes 
+        # check to make sure the mouse is still in the main axes
         # and not over a button or other axes object
         # or outside the axes altogether
         if event.inaxes != self.ax:
@@ -359,7 +361,7 @@ class InteractivePlot(Observer,Observable):
             # This will redraw the drone starting or ending point in its new position
             self.patch_manager.redraw_drone(self.selected_drone)
 
-            self.update()  
+            self.update()
 
     def on_button_release(self, event):
         self.initial_click_position = None
@@ -380,10 +382,7 @@ class InteractivePlot(Observer,Observable):
         # switch between building and drone placement modes
         self.switch_mode(event)
 
-        if (
-            event.key == "tab"
-            and self.mode == "building"
-        ):
+        if event.key == "tab" and self.mode == "building":
             # plot the building
             self.finalize_building()
 
@@ -400,8 +399,9 @@ class InteractivePlot(Observer,Observable):
 
         #     self.run()
 
-    def set_path(self, path:str)->None:
+    def set_path(self, path: str) -> None:
         self.output_path = path
+
     def create_json(self):
         if not self.drones:
             # print("Make sure to have at least one drone")
@@ -409,12 +409,10 @@ class InteractivePlot(Observer,Observable):
             # Set a timer to hide the warning after 2 seconds
             t = Timer(2, self.hide_warning)
             t.start()
-            
 
             self.update()
         else:
             create_json(self.output_path, self.buildings, self.drones)
-            
 
     # def run(self):
     #     # self.ui_components.btn_run.label.set_text("Running")
@@ -425,7 +423,6 @@ class InteractivePlot(Observer,Observable):
     #         # Set a timer to hide the warning after 2 seconds
     #         t = Timer(2, self.hide_warning)
     #         t.start()
-            
 
     #         self.update()
     #     else:
@@ -434,11 +431,6 @@ class InteractivePlot(Observer,Observable):
     #             )
     #         case.building_detection_threshold=10
     #         run_case(case)
-    
-        
-
-        
-        
 
     def update(self):
         # draw the canvas again
@@ -491,12 +483,13 @@ class InteractivePlot(Observer,Observable):
 
         # Set the new mode and update the button label
         self.mode = new_mode
-        switch_label = "Switch to Buildings" if self.mode == "drone" else "Switch to Drones"
+        switch_label = (
+            "Switch to Buildings" if self.mode == "drone" else "Switch to Drones"
+        )
         self.ui_components.rename_button(button_key="switch", new_label=switch_label)
 
         # Call the update method
         self.update()
-
 
     def finalize_building(self):
         building = self.patch_manager.make_building()
@@ -507,12 +500,10 @@ class InteractivePlot(Observer,Observable):
             self.actions_stack.add_action("building", building)
             self.update()
 
-
     def plot_setup(self):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        
         fig.subplots_adjust(bottom=0.1, top=0.9)
 
         ax.set_xlim(self.AXIS_LIMITS)
@@ -553,10 +544,8 @@ class InteractivePlot(Observer,Observable):
         # m.drawmapboundary(fill_color='aqua',zorder=-10)
         # m.fillcontinents(color='coral',lake_color='aqua',zorder=-10)
 
-        
-
         return None
-    
+
     def call(self, event: str, *args, **kwargs):
         if event == "switch_mode":
             self.switch_mode()
@@ -572,14 +561,13 @@ class InteractivePlot(Observer,Observable):
         #     # the event is generate_case
         #     # plt.close()
         #     self.notify_observers(event, case)
-            
 
     def reset(self):
         self.selected_building = None
         self.clear_temp_elements()
         # Remove all building and drone patches
         self.patch_manager.clear_all()
-       
+
         # Empty the buildings and drones lists
         self.buildings.clear()
         self.drones.clear()
@@ -595,7 +583,7 @@ if __name__ == "__main__":
     # Example usage:
 
     plot = InteractivePlot()
-    plot.draw_scene('scenebuilder.json')
+    plot.draw_scene("scenebuilder.json")
     # plot.draw_scene()
 
     print("done")
