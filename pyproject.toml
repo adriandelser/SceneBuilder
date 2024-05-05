@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "scenebuilder"
 version = "0.1.2"
-description = ""
+description = "A simple GUI to create 2D scenes with obstacles and drone paths for multi-agent path planning algorithms"
 authors = ["Adrian del Ser <adrian.delser@gmail.com>"]
 readme = "README.md"
 
