@@ -18,7 +18,7 @@ from threading import Timer
 class SceneBuilder(Observer, Observable):
 
     CLICK_THRESHOLD = 0.14
-    FIG_SIZE = (12, 8)
+    FIG_SIZE = (8, 8)
     AXIS_LIMITS = (-5, 5)
 
     def __init__(self):
@@ -478,7 +478,7 @@ class SceneBuilder(Observer, Observable):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        fig.subplots_adjust(bottom=0.1, top=0.9,left=0)
+        fig.subplots_adjust(bottom=0.1, top=0.9)
 
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
