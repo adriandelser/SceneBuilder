@@ -1,17 +1,13 @@
 from __future__ import annotations
 
-
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 import numpy as np
-from numpy.typing import ArrayLike
-
 
 from scenebuilder.entities import Drone, Obstacle
-
-# from patches import Marker
 from scenebuilder.utils import distance_between_points, create_json, get_from_json
-from scenebuilder.utils import dump_to_json, load_from_json, validate_json_path
+from scenebuilder.utils import load_from_json, validate_json_path
 from scenebuilder.construction import PatchManager
 from scenebuilder.actions_stack import ActionsStack
 from scenebuilder.ui_components import UIComponents
@@ -22,7 +18,7 @@ from threading import Timer
 class SceneBuilder(Observer, Observable):
 
     CLICK_THRESHOLD = 0.14
-    FIG_SIZE = (8, 8)
+    FIG_SIZE = (12, 8)
     AXIS_LIMITS = (-5, 5)
 
     def __init__(self):
@@ -395,10 +391,6 @@ class SceneBuilder(Observer, Observable):
         elif event.key == "escape":
             self.clear_temp_elements()
 
-        # elif event.key == "enter":
-
-        #     self.run()
-
     def set_path(self, path: str) -> None:
         self.output_path = path
 
@@ -413,24 +405,6 @@ class SceneBuilder(Observer, Observable):
             self.update()
         else:
             create_json(self.output_path, self.buildings, self.drones)
-
-    # def run(self):
-    #     # self.ui_components.btn_run.label.set_text("Running")
-    #     # self.update()
-    #     if not self.drones:
-    #         # print("Make sure to have at least one drone")
-    #         self.warning.set_visible(True)  # Start with warning hidden
-    #         # Set a timer to hide the warning after 2 seconds
-    #         t = Timer(2, self.hide_warning)
-    #         t.start()
-
-    #         self.update()
-    #     else:
-    #         case = generate_case(
-    #                 name="Test Case", buildings=self.buildings, drones=self.drones
-    #             )
-    #         case.building_detection_threshold=10
-    #         run_case(case)
 
     def update(self):
         # draw the canvas again
@@ -504,13 +478,13 @@ class SceneBuilder(Observer, Observable):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        fig.subplots_adjust(bottom=0.1, top=0.9)
+        fig.subplots_adjust(bottom=0.1, top=0.9,left=0)
 
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
         ax.set_box_aspect(1)
-        ax.set_xlabel("East --> (m)")
-        ax.set_ylabel("North --> (m)")
+        # ax.set_xlabel("East --> (m)")
+        # ax.set_ylabel("North --> (m)")
         ax.grid(color="k", linestyle="-", linewidth=0.5, which="major")
         ax.grid(color="k", linestyle=":", linewidth=0.5, which="minor")
         # ax.grid(True)
@@ -521,8 +495,8 @@ class SceneBuilder(Observer, Observable):
             "Instructions:\n"
             "'b': switch to building mode, click to place vertices of building\n"
             "Tab: complete a building, \n"
-            "'d': switch to drone mode "
-            # "Enter: run the simulation"
+            "'d': switch to drone mode. "
+            "'esc': clear unwanted points."
         )
 
         fig.text(
@@ -534,15 +508,6 @@ class SceneBuilder(Observer, Observable):
         )
 
         self.fig, self.ax = fig, ax
-
-        # ax2 = ax.twinx()  # create a twin y-axis that shares the same x-axis
-
-        # # plot map on ax1
-        # m = Basemap(projection='merc', llcrnrlat=-60, urcrnrlat=80, llcrnrlon=-180, urcrnrlon=180, resolution='c', ax=ax2)
-        # m.drawcoastlines(zorder=-10)
-        # m.drawcountries(zorder=-10)
-        # m.drawmapboundary(fill_color='aqua',zorder=-10)
-        # m.fillcontinents(color='coral',lake_color='aqua',zorder=-10)
 
         return None
 

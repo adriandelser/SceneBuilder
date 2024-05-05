@@ -2,7 +2,7 @@
 # SceneBuilder
 
 ## Overview
-**SceneBuilder** is a Python package that provides a Matplotlib-based GUI for designing 2D test environments for use in multiagent path planning algorithms. Users can draw polygons to represent obstacles and arrows to indicate the starting and ending points of each agent's path.
+**SceneBuilder** is a Python package that provides a Matplotlib-based GUI for designing 2D test environments in a 10x10m grid for use in multiagent path planning algorithms. Users can draw polygons to represent obstacles and arrows to indicate the starting and ending points of each agent's path.
 
 ## Installation
 
@@ -17,11 +17,7 @@ This command installs SceneBuilder along with all required dependencies, ensurin
 
 ### Prerequisites
 
-SceneBuilder's prerequisites are defined in the pyproject.toml file and include Matplotlib. Install all prerequisites with:
-
-```bash
-pip install matplotlib
-```
+SceneBuilder's prerequisites are defined in the pyproject.toml file and include Matplotlib and numpy.
 
 ### Quick Start Guide
 

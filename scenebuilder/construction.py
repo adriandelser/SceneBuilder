@@ -1,14 +1,11 @@
 import matplotlib.pyplot as plt
 
-# from matplotlib.patches import Marker
 from matplotlib.lines import Line2D
 from typing import List
 from scenebuilder.entities import Obstacle, Drone
 import numpy as np
 from scenebuilder.patches import ObstaclePatch, DronePatch
 from scenebuilder.patches import Marker
-
-# import pyclipper
 
 
 class PatchManager:
