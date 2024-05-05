@@ -1,8 +1,8 @@
-from scenebuilder.gui_sim import InteractivePlot
+from scenebuilder import SceneBuilder
 
 if __name__ == "__main__":
     # initialise the gui class
-    p = InteractivePlot()
+    p = SceneBuilder()
     # set a path relative to the terminal to save the scene
     p.set_output_path("examples/example3.json")
     # load from an existing compatible json file (global or relative path)

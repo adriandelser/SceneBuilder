@@ -5,7 +5,7 @@ from numpy.typing import ArrayLike
 from scenebuilder.entities import Drone, Obstacle
 
 # file to store useful json utilities
-import json, os
+import json, os, sys
 from pathlib import Path
 
 
@@ -85,22 +85,24 @@ class MyEncoder(json.JSONEncoder):
 
 
 def validate_json_path(path):
-    # Check if the path ends with .json
-    if not path.endswith(".json"):
-        raise ValueError("The file name must end with '.json'.")
-
     # Create a Path object
     p = Path(path)
-
     # Convert path to absolute path for checking existence and permissions
     abs_path = p.resolve()
 
+    # Check if the path ends with .json
+    if not path.endswith(".json"):
+        print(f"The file name '{abs_path.name}' must end with '.json'.")
+        sys.exit(1)
+
     # Check if the directory exists and is writable
     if not abs_path.parent.exists() or not abs_path.parent.is_dir():
-        raise FileNotFoundError("The directory does not exist or is not a directory.")
+        print(f"The directory '{abs_path.parent}' does not exist or is not a directory.")
+        sys.exit(1)
 
     if not os.access(abs_path.parent, os.W_OK):
-        raise PermissionError("The directory is not writable.")
+        print(f"The directory '{abs_path.parent}' is not writable.")
+        sys.exit(1)
 
     # If all checks are passed, confirm the path is valid
-    print(f"The path: {path} is valid.")
+    # print(f"The path: {path} is valid.")

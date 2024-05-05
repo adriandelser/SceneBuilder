@@ -19,7 +19,7 @@ from scenebuilder.observer_utils import Observer, Observable
 from threading import Timer
 
 
-class InteractivePlot(Observer, Observable):
+class SceneBuilder(Observer, Observable):
 
     CLICK_THRESHOLD = 0.14
     FIG_SIZE = (8, 8)
@@ -582,7 +582,7 @@ class InteractivePlot(Observer, Observable):
 if __name__ == "__main__":
     # Example usage:
 
-    plot = InteractivePlot()
+    plot = SceneBuilder()
     plot.draw_scene("scenebuilder.json")
     # plot.draw_scene()
 
