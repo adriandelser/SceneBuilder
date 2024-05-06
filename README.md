@@ -7,7 +7,7 @@
 <!-- ![Scene Example 1](/assets/scene1.png){width=10 height=10} -->
 <p align="center">
   <img src="/assets/scene1.png" alt="First Image" width="40%" />
-  <img src="/assets/scene1.png" alt="Second Image" width="40%" />
+  <img src="/assets/scene2.png" alt="Second Image" width="40%" />
 </p>
 
 ## Installation
