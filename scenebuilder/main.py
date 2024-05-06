@@ -1,6 +1,5 @@
 import argparse
 from scenebuilder import SceneBuilder
-import sys
 
 def main():
     parser = argparse.ArgumentParser(description="Launch the SceneBuilder GUI")
@@ -10,7 +9,7 @@ def main():
     args = parser.parse_args()
 
     app = SceneBuilder()
-    
+
     if args.load:
         app.load_scene(args.load)
 

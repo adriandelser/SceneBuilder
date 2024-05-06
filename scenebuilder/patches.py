@@ -5,7 +5,7 @@ from matplotlib.patches import FancyArrow, Polygon
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
-from scenebuilder.entities import Drone, Obstacle
+from .entities import Drone, Obstacle
 
 
 class Arrow:

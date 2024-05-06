@@ -5,13 +5,13 @@ import matplotlib.patches as mpatches
 
 import numpy as np
 
-from scenebuilder.entities import Drone, Obstacle
-from scenebuilder.utils import distance_between_points, create_json, get_from_json
-from scenebuilder.utils import load_from_json, validate_json_path
-from scenebuilder.construction import PatchManager
-from scenebuilder.actions_stack import ActionsStack
-from scenebuilder.ui_components import UIComponents
-from scenebuilder.observer_utils import Observer, Observable
+from .entities import Drone, Obstacle
+from .utils import distance_between_points, create_json, get_from_json
+from .utils import load_from_json, validate_json_path
+from .construction import PatchManager
+from .actions_stack import ActionsStack
+from .ui_components import UIComponents
+from .observer_utils import Observer, Observable
 from threading import Timer
 
 

@@ -1,4 +1,4 @@
-from typing import List, Callable
+from typing import List
 from abc import ABC, abstractmethod
 
 # Define the Observer interface. This class is an example that could be inherited,

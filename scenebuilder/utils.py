@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 # from scenebuilder.json_utils import dump_to_json
-from scenebuilder.entities import Drone, Obstacle
+from .entities import Drone, Obstacle
 
 # file to store useful json utilities
 import json, os, sys
@@ -19,6 +19,8 @@ def distance_between_points(p1: ArrayLike, p2: ArrayLike) -> float:
 
 def load_from_json(file_path: str) -> dict:
     """Load json file contents into dict"""
+    p = Path(file_path)
+    file_path = p.resolve()
     with open(file_path, "r") as f:
         file_contents = json.load(f)
         return file_contents
@@ -27,6 +29,9 @@ def load_from_json(file_path: str) -> dict:
 def dump_to_json(file_path: str, data: dict) -> dict:
     """Write dict to json"""
     # ensure the directory exists
+    p = Path(file_path)
+    # Convert path to absolute path for checking existence and permissions
+    file_path = p.resolve()
     directory = os.path.dirname(file_path)
     if directory:
         os.makedirs(directory, exist_ok=True)
@@ -50,6 +55,9 @@ def get_from_json(case: dict) -> tuple[list[Drone], list[Obstacle]]:
 
 def create_json(path: str, buildings: list[Obstacle], drones: list[Drone]) -> None:
     """Creates the json with the case info and writes it to file at path"""
+    p = Path(path)
+    # Convert path to absolute path for checking existence and permissions
+    abs_path = p.resolve()
     height = 1.2
     # this line adds a third dimension to the x,y coordinates of the building patches and creates a building object from each patch
 
@@ -72,7 +80,7 @@ def create_json(path: str, buildings: list[Obstacle], drones: list[Drone]) -> No
     ]
 
     c = {"scenebuilder": {"buildings": buildings, "vehicles": vehicles}}
-    dump_to_json(path, c)
+    dump_to_json(abs_path, c)
 
 
 # this Class is not finished yet TODO
@@ -97,7 +105,9 @@ def validate_json_path(path):
 
     # Check if the directory exists and is writable
     if not abs_path.parent.exists() or not abs_path.parent.is_dir():
-        print(f"The directory '{abs_path.parent}' does not exist or is not a directory.")
+        print(
+            f"The directory '{abs_path.parent}' does not exist or is not a directory."
+        )
         sys.exit(1)
 
     if not os.access(abs_path.parent, os.W_OK):

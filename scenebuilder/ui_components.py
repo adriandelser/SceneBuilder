@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from scenebuilder.observer_utils import Observable
+from .observer_utils import Observable
 
 
 class UIComponents(Observable):
@@ -24,7 +24,7 @@ class UIComponents(Observable):
                 "axis": self.fig.add_axes([0.33, 0.01, 0.15, 0.05]),
                 "label": "Create JSON",
                 "callback": self.on_json,
-            } 
+            },
         }
 
         # Initialize buttons and register callbacks
@@ -47,4 +47,3 @@ class UIComponents(Observable):
 
     def on_json(self, event):
         self.notify_observers("create_json")
-
