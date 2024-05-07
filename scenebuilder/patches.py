@@ -107,7 +107,7 @@ class DronePatch:
 class ObstaclePatch(Polygon):
     """
     Example usage:
-    patch = BuildingPatch(building_instance, facecolor='blue', edgecolor='red', linewidth=2.0)
+    patch = BuildingPatch(ax, building_instance, facecolor='blue', edgecolor='red', linewidth=2.0)
     """
 
     def __init__(self, building: Obstacle, **kwargs) -> None:
@@ -132,3 +132,4 @@ class ObstaclePatch(Polygon):
     def update_visual(self):
         """Update the visual representation based on the building state."""
         self.set_xy(self.building.vertices)
+

@@ -16,7 +16,12 @@ class ActionsStack:
         self.actions.append((action_type, action))
 
     def remove_action(self, action_type: str, action):
-        self.actions.remove((action_type, action))
+        try:
+            self.actions.remove((action_type, action))
+        except ValueError:
+            # this is in case a json was loaded and therefore the 
+            # object is not in the stack
+            pass
 
     def retrieve_last_action(self):
         if self.actions:

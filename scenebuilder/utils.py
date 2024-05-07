@@ -92,27 +92,38 @@ class MyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def validate_json_path(path):
+def validate_json_path(path:str, exit = False)->dict:
+    '''Check if json input path is valid
+    return True if valid, otherwise return False and quit if exit=True'''
     # Create a Path object
     p = Path(path)
     # Convert path to absolute path for checking existence and permissions
     abs_path = p.resolve()
-
+    pathOK = True
+    info = f'Path {abs_path} is valid'
     # Check if the path ends with .json
-    if not path.endswith(".json"):
-        print(f"The file name '{abs_path.name}' must end with '.json'.")
-        sys.exit(1)
+    if abs_path.is_dir():
+        info = f"{abs_path} is a directory.\nPlease enter path ending with a .json file"
+        pathOK = False
+    elif not path.endswith(".json"):
+        info = f"The file name '{abs_path.name}' must end with '.json'."
+        pathOK=False
+    # print(f"2:{abs_path.parent=}, {abs_path.parent.is_dir()}")
 
     # Check if the directory exists and is writable
-    if not abs_path.parent.exists() or not abs_path.parent.is_dir():
-        print(
-            f"The directory '{abs_path.parent}' does not exist or is not a directory."
-        )
+    elif not abs_path.parent.exists() or not abs_path.parent.is_dir():
+        info=f"The directory '{abs_path.parent}' does not exist or is not a directory."
+        pathOK=False
+
+    elif not os.access(abs_path.parent, os.W_OK):
+        info = f"The directory '{abs_path.parent}' is not writable."
+        pathOK=False
+
+    if not exit:
+        return {'result': pathOK, 'info': info}
+    elif not pathOK:
         sys.exit(1)
 
-    if not os.access(abs_path.parent, os.W_OK):
-        print(f"The directory '{abs_path.parent}' is not writable.")
-        sys.exit(1)
 
     # If all checks are passed, confirm the path is valid
     # print(f"The path: {path} is valid.")

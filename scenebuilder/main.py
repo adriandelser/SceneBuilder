@@ -15,7 +15,7 @@ def main():
 
     if args.output:
         app.set_output_path(args.output)
- 
+    
     app.draw_scene()
 
 if __name__ == "__main__":

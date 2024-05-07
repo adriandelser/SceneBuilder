@@ -8,13 +8,15 @@ import numpy as np
 from .entities import Drone, Obstacle
 from .utils import distance_between_points, create_json, get_from_json
 from .utils import load_from_json, validate_json_path
-from .construction import PatchManager
+from .patch_manager import PatchManager
 from .actions_stack import ActionsStack
 from .ui_components import UIComponents
 from .observer_utils import Observer, Observable
 from threading import Timer
+from matplotlib.widgets import TextBox
+from pathlib import Path
 
-
+import time
 class SceneBuilder(Observer, Observable):
 
     CLICK_THRESHOLD = 0.14
@@ -30,18 +32,23 @@ class SceneBuilder(Observer, Observable):
         self.plot_setup()
         # Define variables
         self.setup_data()
+        
         # Connect event handlers
         self.connect_event_handlers()
 
     def setup_data(self) -> None:
-        # self.ui_components:UIComponents = UIComponents(self.ax)
         self.ui_components = UIComponents(self.ax)
         self.ui_components.add_observer(self)
+
+        
+        
         # this line makes sure the current axes are the main ones
         plt.sca(self.ax)
 
         self.patch_manager = PatchManager(self.ax)
         self.output_path = "scenebuilder.json"
+        
+        self.timer:Timer|None = None
 
         self.drones: list[Drone] = []
         self.buildings: list[Obstacle] = []
@@ -49,7 +56,7 @@ class SceneBuilder(Observer, Observable):
         self.mode = "building"  # 'building', 'drone', or None
         self.actions_stack = ActionsStack()  # New line to track the actions
 
-        self.selected_drone: Drone = None
+        self.selected_drone: Drone|None = None
         self.initial_click_position = None
         self.selected_vertex = None
         self.warning = self.ax.annotate(
@@ -60,22 +67,29 @@ class SceneBuilder(Observer, Observable):
             fontweight="bold",
             color="red",
             ha="center",
+            bbox=dict(boxstyle="round", fc="w", ec="0.5", alpha=1),
+            wrap=True
         )
 
         self.warning.set_visible(False)  # Start with warning hidden
 
         return None
 
-    def set_output_path(self, path: str) -> None:
-        try:
-            validate_json_path(path)
-            self.output_path = path
-        except Exception as e:
-            print(f"Error: {e}")
+    def set_output_path(self, path: str, exit = False, skip_check = False) -> None:
+        '''Set output path to path. call sys.exit() if exit is True and path is invalid'''
+        if skip_check:
+            #skip the validation.
+            self.output_path = Path(path)
+        response = validate_json_path(path, exit)
+        result, info = response.items()
+        if result is True:
+            self.output_path = Path(path)
+        
 
     def load_scene(self, path: str) -> None:
         """Populates the scene with the obstacles and drones in the specified json
         path: path to compatible json file"""
+        self.reset()
         case_info = load_from_json(path)
         drones, buildings = get_from_json(case_info)
         self.drones = drones
@@ -84,6 +98,7 @@ class SceneBuilder(Observer, Observable):
             self.patch_manager.add_building_patch(building)
         for drone in self.drones:
             self.patch_manager.add_drone_patch(drone)
+        self.update()
 
     def draw_scene(self):
         """Draw the scene."""
@@ -256,8 +271,7 @@ class SceneBuilder(Observer, Observable):
         This method is called when a click is detected on the plot.
         The event object contains information about the click, such as its position.
         You can use this information to add new elements to the plot, such as a new building or a new drone.
-        #TODO ORDER MATTERS, events will be handled in the order they are listed in this method"""
-
+        #NOTE ORDER MATTERS, events will be handled in the order they are listed in this method"""
         # If clicked outside of the plot, do nothing
         # if not event.xdata or not event.ydata:
         #     return
@@ -326,20 +340,6 @@ class SceneBuilder(Observer, Observable):
             self.update()  # Redraw to show the moved vertex
 
         ###########################################################################################
-        # move the whole building patch
-        elif self.selected_building and self.initial_click_position:
-            ds = np.array(point) - np.array(self.initial_click_position)
-            # Move the building
-            # set the vertices of the src.Building object, then copy them into the building patch
-            self.selected_building.move_building(ds)
-            self.patch_manager.redraw_building(self.selected_building)
-            # self.building_patches[self.selected_building].update_visual()
-            # Update the initial click position for next movement calculation
-            self.initial_click_position = point
-
-            # Redraw to show the moved building
-            self.update()
-        ###########################################################################################
         # Move the drone
         elif self.selected_drone:
             if self.dragging_drone_point == "start":
@@ -357,6 +357,19 @@ class SceneBuilder(Observer, Observable):
             # This will redraw the drone starting or ending point in its new position
             self.patch_manager.redraw_drone(self.selected_drone)
 
+            self.update()
+        ###########################################################################################
+        # move the whole building patch
+        elif self.selected_building and self.initial_click_position:
+            ds = np.array(point) - np.array(self.initial_click_position)
+            # Move the building
+            # set the vertices of the src.Building object, then copy them into the building patch
+            self.selected_building.move_building(ds)
+            self.patch_manager.redraw_building(self.selected_building)
+            # Update the initial click position for next movement calculation
+            self.initial_click_position = point
+
+            # Redraw to show the moved building
             self.update()
 
     def on_button_release(self, event):
@@ -382,8 +395,11 @@ class SceneBuilder(Observer, Observable):
             # plot the building
             self.finalize_building()
 
-        if event.key == "cmd+z":
+        if event.key in ["cmd+z", "ctrl+z"]:
             self.undo_last_action()
+
+        if event.key in ["cmd+s", "ctrl+s"]:
+            self.create_json()
 
         elif event.key == "backspace":
             self.delete_selected_building()
@@ -391,19 +407,24 @@ class SceneBuilder(Observer, Observable):
         elif event.key == "escape":
             self.clear_temp_elements()
 
-    def set_path(self, path: str) -> None:
-        self.output_path = path
+    def show_warning(self, text:str, duration:float = 3, **kwargs)->None:
+        '''Display the central warning temporarily, set kwargs as per ax.annotate'''
+        self.warning.set_text(text)
+        self.warning.set(**kwargs)
+        self.warning.set_visible(True)  # Start with warning hidden
+        self.update()
+        # Set a timer to hide the warning after {duration} seconds
+        if self.timer and self.timer.is_alive():
+            self.timer.cancel()
+        self.timer = Timer(duration, self.hide_warning)
+        self.timer.start()
+        
 
     def create_json(self):
         if not self.drones:
-            # print("Make sure to have at least one drone")
-            self.warning.set_visible(True)  # Start with warning hidden
-            # Set a timer to hide the warning after 2 seconds
-            t = Timer(2, self.hide_warning)
-            t.start()
-
-            self.update()
+            self.show_warning("WARNING, No Drones!", duration=3, color = 'r')
         else:
+            self.show_warning(f'Creating JSON file\n{self.output_path}', duration=3, color = 'g')
             create_json(self.output_path, self.buildings, self.drones)
 
     def update(self):
@@ -483,8 +504,6 @@ class SceneBuilder(Observer, Observable):
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
         ax.set_box_aspect(1)
-        # ax.set_xlabel("East --> (m)")
-        # ax.set_ylabel("North --> (m)")
         ax.grid(color="k", linestyle="-", linewidth=0.5, which="major")
         ax.grid(color="k", linestyle=":", linewidth=0.5, which="minor")
         # ax.grid(True)
@@ -506,26 +525,42 @@ class SceneBuilder(Observer, Observable):
             fontsize=10,
             bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
         )
+        
 
         self.fig, self.ax = fig, ax
 
         return None
 
+    def verify_path(self, path:str)->bool:
+        response = validate_json_path(path)
+        result, info = response['result'], response['info']
+        if result:
+            self.show_warning(f'Set new output path\n{path}', 3, color='g')
+            return True
+        else:
+            self.show_warning(info,duration=3,color='r')
+            return False        
+
+    def text_box_submit(self, path:str):
+        if self.verify_path(path):
+            self.set_output_path(path, skip_check=True)
+
     def call(self, event: str, *args, **kwargs):
+        '''class called by observers triggered by button or text_box,
+          see ui_components.py'''
         if event == "switch_mode":
             self.switch_mode()
         elif event == "reset":
             self.reset()
-        # elif event == "run":
-        #     self.run()
         elif event == "create_json":
             self.create_json()
-        # elif event == "generate_case":
-        #     case = generate_case(name="my_case", buildings=self.buildings, drones = self.drones)
-        #     #return the case to whichever application might be interested
-        #     # the event is generate_case
-        #     # plt.close()
-        #     self.notify_observers(event, case)
+        elif event == "load_json":
+            path = kwargs["input"]
+            self.load_scene(path)
+        elif event=="text_box_submit":
+            path = kwargs["input"]
+            self.text_box_submit(path)
+
 
     def reset(self):
         self.selected_building = None
@@ -544,14 +579,17 @@ class SceneBuilder(Observer, Observable):
         self.ax.figure.canvas.draw()
 
 
-if __name__ == "__main__":
-    # Example usage:
+# if __name__ == "__main__":
+#     # Example usage:
+#     import runpy
 
-    plot = SceneBuilder()
-    plot.draw_scene("scenebuilder.json")
-    # plot.draw_scene()
+#     # Replace 'module_name' with the name of your module
+#     runpy.run_module('module_name', run_name='__main__')
+#     plot = SceneBuilder()
+#     plot.draw_scene()
+#     # plot.draw_scene()
 
-    print("done")
+#     print("done")
 
 
 # Suggestions:

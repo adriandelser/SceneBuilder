@@ -73,7 +73,8 @@ class Obstacle(Entity):
 
     def __init__(self, vertices: ArrayLike):
         super().__init__(ID="building", position=None)
-        self.vertices = self.sort_vertices(vertices[:, :2])
+        # self.vertices = self.sort_vertices(vertices[:, :2])
+        self.vertices = vertices[:, :2]
 
     def sort_vertices(self, vertices):
         """Sorts the vertices by angle around the centre of mass of the polygon"""

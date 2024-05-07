@@ -6,7 +6,6 @@ import numpy as np
 from .entities import Obstacle, Drone
 from .patches import ObstaclePatch, DronePatch, Marker
 
-
 class PatchManager:
     def __init__(self, ax: plt.Axes):
         self.ax = ax
@@ -33,7 +32,7 @@ class PatchManager:
         self.current_building_vertices.append(point)
 
     def get_building_patch(self, building: Obstacle) -> ObstaclePatch:
-        """Obtains the patch for the building passed as argument
+        """Obtains the paftch for the building passed as argument
         and returns it. If the patch doesn't exist, returns KeyError.
         """
         return self.building_patches[building]
@@ -109,3 +108,5 @@ class PatchManager:
         self.remove_temp_drone_start()
         self.building_patches.clear()
         self.drone_patches.clear()
+
+    
