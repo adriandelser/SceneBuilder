@@ -19,7 +19,7 @@ import os
 class SceneBuilder(Observer, Observable):
 
     CLICK_THRESHOLD = 0.14
-    FIG_SIZE = (8, 9)
+    FIG_SIZE = (8, 8.5)
     AXIS_LIMITS = (-5, 5)
 
     def __init__(self):
@@ -48,7 +48,7 @@ class SceneBuilder(Observer, Observable):
         finally:
             # This block runs whether validation was skipped, passed, or failed.
             self.output_path = path
-            self.current_file_text.set_text(self.output_path)
+            self.ui_components.modify_current_file_text(self.output_path)
             self._show_warning(f'Set new output path\n{path}', 3, color='g')
 
     def load_scene(self, path: str) -> None:
@@ -73,7 +73,7 @@ class SceneBuilder(Observer, Observable):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        fig.subplots_adjust(bottom=0.1, top=0.9)
+        fig.subplots_adjust(bottom=0.05, top=0.9)
 
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
@@ -99,18 +99,9 @@ class SceneBuilder(Observer, Observable):
             fontsize=10,
             bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
         )
-        fig.text(
-                        0.1, 0.86, "Current output file: ", 
-                        fontsize=10,  # Makes the font larger
-                        fontweight='bold',  # Makes the font bold
-                        color='k'  # Changes the text color
-                        )
-        self.current_file_text = fig.text(
-                        0.32, 0.86, "scenebuilder.json", 
-                        fontsize=10,  # Makes the font larger
-                        fontweight='bold',  # Makes the font bold
-                        color='g',  # Changes the text color
-                        )
+        #modifiable/interactive ui elements are in ui_components.py
+
+        
         
         self.fig, self.ax = fig, ax
 

@@ -10,7 +10,7 @@ class UIComponents(Observable):
         super().__init__()
         self.ax = ax
         self.fig = ax.figure
-        button_y_val = 0.05
+        button_y_val = 0.01
         self.buttons: dict[str, dict[str, plt.Axes | str | function]] = {
             "switch": {
                 "axis": self.fig.add_axes([0.01, button_y_val, 0.20, 0.05]),
@@ -49,14 +49,19 @@ class UIComponents(Observable):
         
         self.text_box.on_submit(self.on_text_box)
         self.text_box.on_submit
-        self.text_box.set_val("scenebuilder.json")
-        #add a new annotation above the buttons to indicate the current text value
-        # self.fig.text(
-        #                 0.01, 0.01, "Current output file:", 
-        #                 fontsize=12,  # Makes the font larger
-        #                 fontweight='bold',  # Makes the font bold
-        #                 color='g'  # Changes the text color to red
-        #                 )
+        self.text_box.set_val("")
+        self.fig.text(
+                        0.1, 0.86, "Current output file: ", 
+                        fontsize=10,  # Makes the font larger
+                        fontweight='bold',  # Makes the font bold
+                        color='k'  # Changes the text color
+                        )
+        self.current_file_text = self.fig.text(
+                        0.32, 0.86, "scenebuilder.json", 
+                        fontsize=10,  # Makes the font larger
+                        fontweight='bold',  # Makes the font bold
+                        color='g',  # Changes the text color
+                        )
 
 
     def submit(self, text: str) -> None:
@@ -69,6 +74,9 @@ class UIComponents(Observable):
         else:
             raise ValueError(f"No button found with the key '{button_key}'")
 
+    def modify_current_file_text(self, new_text: str) -> None:
+        self.current_file_text.set_text(new_text)
+        
     def on_switch_mode(self, event):
         self.notify_observers("switch_mode")
 
