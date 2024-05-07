@@ -76,14 +76,16 @@ class SceneBuilder(Observer, Observable):
         return None
 
     def set_output_path(self, path: str, exit = False, skip_check = False) -> None:
-        '''Set output path to path. call sys.exit() if exit is True and path is invalid'''
+        '''Set output path to validated path. call sys.exit() if exit is True and path is invalid'''
+        self.show_warning(f'Set new output path\n{path}', 3, color='g')
         if skip_check:
             #skip the validation.
-            self.output_path = Path(path)
+            self.output_path = path
+            return
         response = validate_json_path(path, exit)
         result, info = response.items()
         if result is True:
-            self.output_path = Path(path)
+            self.output_path = path
         
 
     def load_scene(self, path: str) -> None:
@@ -535,7 +537,7 @@ class SceneBuilder(Observer, Observable):
         response = validate_json_path(path)
         result, info = response['result'], response['info']
         if result:
-            self.show_warning(f'Set new output path\n{path}', 3, color='g')
+            self.show_warning(info, 3, color='g')
             return True
         else:
             self.show_warning(info,duration=3,color='r')
@@ -544,6 +546,17 @@ class SceneBuilder(Observer, Observable):
     def text_box_submit(self, path:str):
         if self.verify_path(path):
             self.set_output_path(path, skip_check=True)
+
+    def load_json(self, path:str):
+        if not self.verify_path(path):
+            return
+        try:
+            self.load_scene(path)
+            self.show_warning(f'Loaded {Path(path).resolve().name}', duration=3, color='g')
+        except Exception:
+            #not ideal but catch and json formatting errors for now
+            self.show_warning(f'ERROR: {Path(path).resolve().name} format incompatible')
+            
 
     def call(self, event: str, *args, **kwargs):
         '''class called by observers triggered by button or text_box,
@@ -556,7 +569,7 @@ class SceneBuilder(Observer, Observable):
             self.create_json()
         elif event == "load_json":
             path = kwargs["input"]
-            self.load_scene(path)
+            self.load_json(path)
         elif event=="text_box_submit":
             path = kwargs["input"]
             self.text_box_submit(path)

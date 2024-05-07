@@ -23,7 +23,7 @@ class UIComponents(Observable):
             },
             "create_json": {
                 "axis": self.fig.add_axes([0.33, 0.01, 0.15, 0.05]),
-                "label": "Create JSON",
+                "label": "Save JSON",
                 "callback": self.on_json,
             },
             "load_json": {
