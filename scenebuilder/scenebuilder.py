@@ -440,7 +440,7 @@ class SceneBuilder(Observer, Observable):
             self._undo_last_action()
 
         if event.key in ["cmd+s", "ctrl+s"]:
-            self._create_json()
+            self._create_json(self.output_path)
 
         elif event.key == "backspace":
             self._delete_selected_building()
