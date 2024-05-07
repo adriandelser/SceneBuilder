@@ -1,7 +1,14 @@
 from pathlib import Path
 
-p = ''
+p = 'hd.json'
 
 path = Path(p).resolve()
 path = Path(path)
-print(path.is_dir())
+print(path.exists())
+d = {'hi': 'hello', 'bye': 'goodbye'}
+a = [1,2,3]
+def temp(*args,**kwargs):
+    print(*args)
+    print(**kwargs)
+
+temp(args = a, kwargs=d)

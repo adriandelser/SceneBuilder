@@ -10,24 +10,25 @@ class UIComponents(Observable):
         super().__init__()
         self.ax = ax
         self.fig = ax.figure
+        button_y_val = 0.05
         self.buttons: dict[str, dict[str, plt.Axes | str | function]] = {
             "switch": {
-                "axis": self.fig.add_axes([0.01, 0.01, 0.20, 0.05]),
+                "axis": self.fig.add_axes([0.01, button_y_val, 0.20, 0.05]),
                 "label": "Switch to Drones",
                 "callback": self.on_switch_mode,
             },
             "reset": {
-                "axis": self.fig.add_axes([0.22, 0.01, 0.1, 0.05]),
+                "axis": self.fig.add_axes([0.22, button_y_val, 0.1, 0.05]),
                 "label": "Reset",
                 "callback": self.on_reset,
             },
             "create_json": {
-                "axis": self.fig.add_axes([0.33, 0.01, 0.15, 0.05]),
+                "axis": self.fig.add_axes([0.33, button_y_val, 0.15, 0.05]),
                 "label": "Save JSON",
                 "callback": self.on_json,
             },
             "load_json": {
-                "axis": self.fig.add_axes([0.49, 0.01, 0.15, 0.05]),
+                "axis": self.fig.add_axes([0.49, button_y_val, 0.15, 0.05]),
                 "label": "Load JSON",
                 "callback": self.on_load,
             },
@@ -40,7 +41,7 @@ class UIComponents(Observable):
             self.buttons[key]["button"] = button
 
         #create textbox, color is (r,g,b,alpha)
-        self.axbox = self.fig.add_axes([0.72, 0.01, 0.2, 0.05])
+        self.axbox = self.fig.add_axes([0.72, button_y_val, 0.2, 0.05])
         self.text_box = EnterTextBox(self.axbox, "Path:",
                                 label_pad = 0.1, 
                                 textalignment="left",
@@ -48,7 +49,15 @@ class UIComponents(Observable):
         
         self.text_box.on_submit(self.on_text_box)
         self.text_box.on_submit
-        self.text_box.set_val("")  # Trigger `submit` with the initial string.
+        self.text_box.set_val("scenebuilder.json")
+        #add a new annotation above the buttons to indicate the current text value
+        # self.fig.text(
+        #                 0.01, 0.01, "Current output file:", 
+        #                 fontsize=12,  # Makes the font larger
+        #                 fontweight='bold',  # Makes the font bold
+        #                 color='g'  # Changes the text color to red
+        #                 )
+
 
     def submit(self, text: str) -> None:
         # self.notify_observers("evaluate", text)

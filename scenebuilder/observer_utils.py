@@ -27,7 +27,7 @@ class Observer(ABC):
     """
 
     @abstractmethod
-    def call(self, event: str, *args, **kwargs):
+    def _call(self, event: str, *args, **kwargs):
         """
         Abstract method that must be implemented by concrete subclasses.
 
@@ -56,4 +56,4 @@ class Observable:
 
     def notify_observers(self, event: str, *args, **kwargs):
         for observer in self._observers:
-            observer.call(event, *args, **kwargs)
+            observer._call(event, *args, **kwargs)
