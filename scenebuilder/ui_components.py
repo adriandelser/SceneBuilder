@@ -48,7 +48,6 @@ class UIComponents(Observable):
                                 hovercolor=(0,1,0,0.2))
         
         self.text_box.on_submit(self.on_text_box)
-        self.text_box.on_submit
         self.text_box.set_val("")
         self.fig.text(
                         0.1, 0.86, "Current output file: ", 
@@ -64,9 +63,9 @@ class UIComponents(Observable):
                         )
 
 
-    def submit(self, text: str) -> None:
-        # self.notify_observers("evaluate", text)
-        print(text)
+    # def submit(self, text: str) -> None:
+    #     # self.notify_observers("evaluate", text)
+    #     print(text)
 
     def rename_button(self, button_key: str, new_label: str) -> None:
         if button_key in self.buttons:
@@ -76,7 +75,7 @@ class UIComponents(Observable):
 
     def modify_current_file_text(self, new_text: str) -> None:
         self.current_file_text.set_text(new_text)
-        
+
     def on_switch_mode(self, event):
         self.notify_observers("switch_mode")
 
@@ -90,13 +89,17 @@ class UIComponents(Observable):
         self.notify_observers("load_json", input = self.text_box.text)
 
     def on_text_box(self, text):
+        self.text_box.stop_typing()
         self.notify_observers('text_box_submit', input=text)
 
 
 
 class EnterTextBox(TextBox):
+
     def stop_typing(self, event=None):
         """
+        By some magic, this method is enough to only submit the textbox when enter is pressed
+        instead of both enter and clicking outside the textbox
         Override the default behavior to not submit when focus is lost.
         ie don't submit when clicking outside of the textbox,
         only submit if enter is pressed
@@ -104,8 +107,6 @@ class EnterTextBox(TextBox):
         self.capturekeystrokes = False
         self.cursor.set_visible(False)
         self.ax.figure.canvas.draw()
-        pass
+        
 
-    def _submit(self, event):
-        if event.key == 'enter':
-            super()._submit(event)
+    

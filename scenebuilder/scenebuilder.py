@@ -442,7 +442,7 @@ class SceneBuilder(Observer, Observable):
         if event.key in ["cmd+s", "ctrl+s"]:
             self._create_json(self.output_path)
 
-        elif event.key == "backspace":
+        elif event.key in ["backspace", "delete"]:
             self._delete_selected_building()
 
         elif event.key == "escape":
@@ -573,10 +573,10 @@ class SceneBuilder(Observer, Observable):
     def _create_json(self, path:str):
         if not self.drones:
             #amber warning for no drones
-            self._show_warning(f"Saving to JSON file {path}\nWARNING, No Drones!", duration=3, color = (1,0.75,0,1))
+            self._show_warning(f"Saving scene to file: {path}\nWARNING, No Drones!", duration=3, color = (1,0.75,0,1))
         else:
             #green warning if at least one drone
-            self._show_warning(f'Saving to JSON file\n{path}', duration=3, color = 'g')
+            self._show_warning(f'Saving to file: \n{path}', duration=3, color = 'g')
         create_json(path, self.buildings, self.drones)
 
     def _call(self, event: str, *args, **kwargs):

@@ -22,15 +22,28 @@ This command installs SceneBuilder along with numpy and matplotlib, ensuring tha
 
 
 
-## Getting Started
 
-### Prerequisites
+## Prerequisites
 
 SceneBuilder's prerequisites are defined in the pyproject.toml file and include Matplotlib and numpy.
 
-### Quick Start Guide
+## Quick Start Guide
 
-To start using SceneBuilder, you need to create an instance of the `SceneBuilder` class and invoke the `draw_scene()` method. Below is a simple example to get you started:
+### Using Command-Line Options
+
+You can use SceneBuilder directly from the command line with the following options:
+
+- `-o`, `--output`: Specify the path where the scene should be saved as a JSON file.
+- `-l`, `--load`: Specify a JSON file path to load an existing scene.
+
+Example usage:
+
+```bash
+scenebuilder --load path/to/scene.json --output path/to/output.json
+```
+
+### In Code
+To use SceneBuilder in code, you need to create an instance of the `SceneBuilder` class and invoke the `draw_scene()` method. Below is a simple example to get you started:
 
 ```python
 from scenebuilder import SceneBuilder
@@ -56,18 +69,7 @@ scene.set_output_path("path/to/output.json")
 scene.draw_scene()
 ```
 
-### Using Command-Line Options
 
-You can also use SceneBuilder directly from the command line with the following options:
-
-- `-o`, `--output`: Specify the path where the scene should be saved as a JSON file.
-- `-l`, `--load`: Specify a JSON file path to load an existing scene.
-
-Example usage:
-
-```bash
-scenebuilder --load path/to/scene.json --output path/to/output.json
-```
 
 ## Features
 
@@ -76,6 +78,7 @@ scenebuilder --load path/to/scene.json --output path/to/output.json
 - **Set Drone Paths**: Click once to place the starting point, and again to place the goal of an agent/drone. An arrow will automatically be drawn from start to goal.
 - **Move or adjust existing obstacles/drones**: Obstacles and drones can be moved by clicking and dragging. Drone start and goal points, as well as existing obstacle vertices can be moved in the same way.
 - **Switch between Obstacle and Drone Modes**: Press b to switch to building/obstacle mode. Press d to switch to drone/agent mode. Alternatively click the Switch button on the bottom left of the gui.
+- **Delete obstacles**: Select the obstacle and press delete or backspace. NOTE this is not yet available for drones.
 - **Remove unwanted points**: To remove unwanted points (either obstacle vertices or a drone start point), press escape.
 - **Undo drone/obstacle placement**: To remove the last obstacle or drone, press ctrl+z.
 - **Reset Scene**: To reset the scene to a blank canvas, click the Reset button in the gui.
