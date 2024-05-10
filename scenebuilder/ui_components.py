@@ -3,7 +3,13 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 from .observer_utils import Observable
 from matplotlib.widgets import TextBox 
+from tkinter import Tk, filedialog
+from pathlib import Path
+import os
 
+# Initialize Tkinter just once
+root = Tk()
+root.withdraw()  # Hide the main window
 
 class UIComponents(Observable):
     def __init__(self, ax: plt.Axes):
@@ -25,7 +31,7 @@ class UIComponents(Observable):
             "create_json": {
                 "axis": self.fig.add_axes([0.33, button_y_val, 0.15, 0.05]),
                 "label": "Save JSON",
-                "callback": self.on_json,
+                "callback": self.on_save,
             },
             "load_json": {
                 "axis": self.fig.add_axes([0.49, button_y_val, 0.15, 0.05]),
@@ -82,11 +88,30 @@ class UIComponents(Observable):
     def on_reset(self, event):
         self.notify_observers("reset")
 
-    def on_json(self, event):
-        self.notify_observers("create_json")
+    def on_save(self, event):
+        if self.text_box.text:
+            filename = self.text_box.text
+        else:
+            # Get the current working directory
+            current_directory = os.getcwd()
+            filename = filedialog.asksaveasfilename(initialdir=current_directory,
+                                                    initialfile='scenebuilder',
+                                                    defaultextension=".json")
+        
+            if not filename:
+                return
+            # print(f"{filepath=}")
+            # filepath = Path(filename)
+        self.notify_observers("create_json", input=filename)
 
     def on_load(self,event):
-        self.notify_observers("load_json", input = self.text_box.text)
+         # Get the current working directory
+        current_directory = os.getcwd()
+        filename = filedialog.askopenfilename(initialdir=current_directory)
+        if not filename:
+            return
+        filepath = str(Path(filename))
+        self.notify_observers("load_json", input = filepath)
 
     def on_text_box(self, text):
         self.text_box.stop_typing()
@@ -99,7 +124,7 @@ class EnterTextBox(TextBox):
     def stop_typing(self, event=None):
         """
         By some magic, this method is enough to only submit the textbox when enter is pressed
-        instead of both enter and clicking outside the textbox
+        instead of both enter and clicking outside the textbox.
         Override the default behavior to not submit when focus is lost.
         ie don't submit when clicking outside of the textbox,
         only submit if enter is pressed

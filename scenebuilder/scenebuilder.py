@@ -73,7 +73,7 @@ class SceneBuilder(Observer, Observable):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        fig.subplots_adjust(bottom=0.05, top=0.9)
+        fig.subplots_adjust(bottom=0.1, top=0.85)
 
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
@@ -172,15 +172,21 @@ class SceneBuilder(Observer, Observable):
         self._update()
 
     def _connect_event_handlers(self) -> None:
-
-        self.fig.canvas.mpl_connect("pick_event", self._on_pick)
-        self.fig.canvas.mpl_connect("button_press_event", self._on_click)
-        self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
+        #supported values are 'resize_event', 'draw_event', 'key_press_event', 'key_release_event', 'button_press_event', 'button_release_event', 'scroll_event', 'motion_notify_event', 'pick_event', 'figure_enter_event', 'figure_leave_event', 'axes_enter_event', 'axes_leave_event', 'close_event'
+        self.on_pick=self.fig.canvas.mpl_connect("pick_event", self._on_pick)
+        self.on_click=self.fig.canvas.mpl_connect("button_press_event", self._on_click)
+        self.on_key=self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
         self.fig.canvas.mpl_connect("button_release_event", self._on_button_release)
         self.fig.canvas.mpl_connect("motion_notify_event", self._on_mouse_move)
+        # self.resize=self.fig.canvas.mpl_connect('resize_event', lambda x:print("tool triggered"))
+        return None
+    
+    def _disconnect_event_handlers(self)->None:
+        self.fig.canvas.mpl_disconnect(self.on_click)
+        self.fig.canvas.mpl_disconnect(self.on_key)
+        self.fig.canvas.mpl_disconnect(self.on_pick)
 
         return None
-
     def _handle_vertex_movement(self, event):
         """Returns True if a click is near a vertex of an obstacle"""
         if not self.buildings:
@@ -586,9 +592,11 @@ class SceneBuilder(Observer, Observable):
         elif event == "reset":
             self._reset()
         elif event == "create_json":
-            self._create_json(path=self.output_path)
+            path = kwargs.get("input",self.output_path)
+            self.set_output_path(path)
+            self._create_json(path=path)
         elif event == "load_json":
-            path = kwargs["input"]
+            path = kwargs.get("input")
             self._load_json(path)
         elif event=="text_box_submit":
             path = kwargs["input"]
@@ -633,3 +641,7 @@ class SceneBuilder(Observer, Observable):
 # changing drone with click and drag
 # change drone parameters such as source strength, imaginary source strength, goal strength, goal safety etc
 # cooperating or not (can turn on and off for each drone)
+
+
+
+#for status here:https://stackoverflow.com/questions/70842267/in-matplotlib-how-do-i-catch-that-event-zoom-tool-has-been-selected

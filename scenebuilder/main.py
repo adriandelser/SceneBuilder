@@ -14,7 +14,7 @@ def main():
         app.load_scene(args.load)
 
     if args.output:
-        app.set_output_path(args.output)
+        app.set_output_path(args.output, exit=True)
     
     app.draw_scene()
 

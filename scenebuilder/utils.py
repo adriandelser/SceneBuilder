@@ -94,34 +94,38 @@ class MyEncoder(json.JSONEncoder):
 
 def validate_json_path(path:str, exit = False)->dict:
     '''Check if json input path is valid
-    return True if valid, otherwise return False and quit if exit=True'''
+    returns:
+    0 if the path is invalid and/or if the file doesn't end in .json
+    1 if the path is valid and ends in .json but does not exist
+    2 if 1 but file exists
+
+    system will quit if exit=True'''
     # Create a Path object
     p = Path(path)
     # Convert path to absolute path for checking existence and permissions
     abs_path = p.resolve()
-    pathOK = True
-    info = f'Path {abs_path} is valid'
-    # Check if the path ends with .json
+    pathOK = 0
+    
     if abs_path.is_dir():
         info = f"{abs_path} is a directory.\nPlease enter path ending with a .json file"
-        pathOK = False
-    elif not path.endswith(".json"):
-        info = f"The file name '{abs_path.name}' must end with '.json'."
-        pathOK=False
-    # print(f"2:{abs_path.parent=}, {abs_path.parent.is_dir()}")
-
     # Check if the directory exists and is writable
     elif not abs_path.parent.exists() or not abs_path.parent.is_dir():
         info=f"The directory '{abs_path.parent}' does not exist or is not a directory."
-        pathOK=False
-
     elif not os.access(abs_path.parent, os.W_OK):
         info = f"The directory '{abs_path.parent}' is not writable."
-        pathOK=False
+    # Check if the path ends with .json
+    elif not path.endswith(".json"):
+        info = f"The file name '{abs_path.name}' must end with '.json'."
+    elif not abs_path.exists():
+        info = f"Warning:The file '{abs_path}' does not exist."
+        pathOK=1
+    else:
+        info = f'File {abs_path.name} exists'
+        pathOK=2
 
     if not exit:
         return {'result': pathOK, 'info': info}
-    elif not pathOK:
+    elif pathOK == 0:
         sys.exit(1)
 
 
