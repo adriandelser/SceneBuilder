@@ -81,7 +81,7 @@ scene.draw_scene()
 
 ## Saving Scenes
 
-Once you have created a scene, you can save it to a JSON file by clicking the 'Create JSON' button in the GUI. This file can then be used as input for path planning algorithms that require predefined scenes with obstacles and paths.
+Once you have created a scene, you can save it to a JSON or GeoJSON file by clicking the 'Save' button in the GUI. You will then be prompted to select whether you want to use our basic JSON format or GeoGSON. This file can then be used as input for path planning algorithms that require predefined scenes with obstacles and paths.
 
 **_Unless otherwise specified, the file is saved as "scenebuilder.json" in the current working directory._**
 

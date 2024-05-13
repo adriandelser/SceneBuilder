@@ -88,7 +88,7 @@ class UIComponents(Observable):
         for fmt in formats:
             ax_fmt = self.fig.add_axes([0.1, y_pos, 0.25, 0.1])
             btn = plt.Button(ax_fmt, fmt)
-            btn.on_clicked(self.on_save)
+            btn.on_clicked(lambda event, fmt=fmt: self.on_save(fmt))  # Pass fmt as a default value to the lambda
             self.format_buttons.append(btn)
             btn.ax.set_visible(False)
             btn.set_active(False)
@@ -128,8 +128,8 @@ class UIComponents(Observable):
     def on_reset(self, event):
         self.notify_observers("reset")
 
-    def on_save(self, event):
-        format_type = event.inaxes.get_label()
+    def on_save(self, text:str):
+        format_type = text
         for i, btn in enumerate(self.format_buttons):
             btn.ax.set_visible(False)
             btn.set_active(False)
@@ -143,6 +143,8 @@ class UIComponents(Observable):
             extension = '.json'
         elif format_type=='GeoJSON':
             extension = '.geojson'
+        else:
+            print(f"{format_type=}")
 
         if self.text_box.text:
             filename = self.text_box.text
