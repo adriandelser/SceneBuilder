@@ -22,9 +22,9 @@ class Entity:
 class Drone(Entity):
     """Class containing all necessary information about a Drone Entity, not including its graphics"""
 
-    def __init__(self, ID, position, goal:np.ndarray):
+    def __init__(self, ID, position, goal: np.ndarray):
         super().__init__(ID, position)
-        self.goal = goal
+        self.goal = np.array(goal)
 
     def is_near_goal(self, point, threshold=0.2):
         return np.linalg.norm(np.array(point) - self.goal[:2]) < threshold
@@ -72,11 +72,17 @@ class Obstacle(Entity):
     """Class containing all necessary information about a Building Entity, not including its graphics"""
 
     def __init__(self, vertices: ArrayLike):
-        super().__init__(ID = "building", position=None)
-        self.vertices = self.sort_vertices(vertices)
+        super().__init__(ID="building", position=None)
+        # self.vertices = self.sort_vertices(vertices[:, :2])
+        # Ensure the first and last vertices are not the same
+        if np.array_equal(vertices[0, :2], vertices[-1, :2]):
+            vertices = vertices[
+                :-1, :2
+            ]  # Remove the last vertex if it's the same as the first one
+        self.vertices = vertices[:, :2]
 
     def sort_vertices(self, vertices):
-        '''Sorts the vertices by angle around the centre of mass of the polygon'''
+        """Sorts the vertices by angle around the centre of mass of the polygon"""
         Xavg = np.mean(vertices[:, 0:1])
         Yavg = np.mean(vertices[:, 1:2])
         angles = np.arctan2(
@@ -115,7 +121,6 @@ class Obstacle(Entity):
         # Compute the distance of the point from the line segment
         line_vector = np.array(end) - np.array(start)
         point_vector = np.array(point) - np.array(start)
-
         # Compute the projection of point_vector onto line_vector
         proj_length = np.dot(point_vector, line_vector) / np.linalg.norm(line_vector)
 

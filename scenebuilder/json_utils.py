@@ -2,6 +2,7 @@
 import json, os
 import numpy as np
 
+#this Class is not finished yet TODO
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):

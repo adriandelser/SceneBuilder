@@ -5,8 +5,7 @@ from matplotlib.patches import FancyArrow, Polygon
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
-# from mixins import ClickableMixin
-from scenebuilder.entities import Drone, Obstacle
+from .entities import Drone, Obstacle
 
 
 class Arrow:
@@ -15,7 +14,7 @@ class Arrow:
     def __init__(self, start: ArrayLike, end: ArrayLike, ax: plt.Axes) -> None:
         self.start = np.array(start)
         self.end = np.array(end)
-        self.arrow:FancyArrow = None
+        self.arrow: FancyArrow = None
         self.ax = ax
 
     def create_arrow(self) -> FancyArrow:
@@ -89,10 +88,9 @@ class DronePatch:
             self.marker_end.create_marker(),
             self.arrow.create_arrow(),
         )
-    
-    def remove(self)->None:
-        """Remove the three patches
-        """
+
+    def remove(self) -> None:
+        """Remove the three patches"""
         self.marker_start.marker.remove()
         self.marker_end.marker.remove()
         self.arrow.arrow.remove()
@@ -100,7 +98,7 @@ class DronePatch:
     def patches(self):
         return self.marker_start.marker, self.marker_end.marker, self.arrow.arrow
 
-    def update(self)->None:
+    def update(self) -> None:
         self.marker_start.update_position(self.drone.position[:2])
         self.marker_end.update_position(self.drone.goal[:2])
         self.arrow.update_arrow_position(self.drone.position[:2], self.drone.goal[:2])
@@ -109,7 +107,7 @@ class DronePatch:
 class ObstaclePatch(Polygon):
     """
     Example usage:
-    patch = BuildingPatch(building_instance, facecolor='blue', edgecolor='red', linewidth=2.0)
+    patch = BuildingPatch(ax, building_instance, facecolor='blue', edgecolor='red', linewidth=2.0)
     """
 
     def __init__(self, building: Obstacle, **kwargs) -> None:
@@ -134,4 +132,3 @@ class ObstaclePatch(Polygon):
     def update_visual(self):
         """Update the visual representation based on the building state."""
         self.set_xy(self.building.vertices)
-

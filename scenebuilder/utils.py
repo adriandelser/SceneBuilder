@@ -1,14 +1,12 @@
 import numpy as np
 from numpy.typing import ArrayLike
 
+# from scenebuilder.json_utils import dump_to_json
+from .entities import Drone, Obstacle
 
-# from gflow.cases import Case, Cases
-# from gflow.building import Building
-# from gflow.vehicle import Vehicle
-# from gflow.utils.simulation_utils import run_simulation, set_new_attribute
-from scenebuilder.json_utils import dump_to_json
-# from gflow.utils.plot_utils import PlotTrajectories
-from scenebuilder.entities import Drone, Obstacle
+# file to store useful json utilities
+import json, os, sys
+from pathlib import Path
 
 
 def distance_between_points(p1: ArrayLike, p2: ArrayLike) -> float:
@@ -18,118 +16,200 @@ def distance_between_points(p1: ArrayLike, p2: ArrayLike) -> float:
     p1, p2 = np.array(p1), np.array(p2)
     return np.linalg.norm(p1 - p2)
 
-#### TODO The methods below should potentially be removed from this project and lie in gflow or whichever path planning algorithm is being called
-#### This project should just output the case, with the list of buildings and drones, and then the path planning algorithm should be called
-#### This is just a temporary solution to get the gui working
+
+def load_from_json(file_path: str) -> dict:
+    """Load json file contents into dict"""
+    p = Path(file_path)
+    file_path = p.resolve()
+    with open(file_path, "r") as f:
+        file_contents = json.load(f)
+        return file_contents
 
 
-def create_json(name: str, buildings: list[Obstacle], drones: list[Drone]) -> None:
+def dump_to_json(file_path: str, data: dict) -> dict:
+    """Write dict to json"""
+    # ensure the directory exists
+    p = Path(file_path)
+    # Convert path to absolute path for checking existence and permissions
+    file_path = p.resolve()
+    directory = os.path.dirname(file_path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=4)
+        return None
+
+
+def get_case_from_dict(case: dict) -> tuple[list[Drone], list[Obstacle]]:
+    """Get vehicles and building from json"""
+    # get the first case in the dict
+    case_info: dict = next(iter(case.values()))
+    vehicles = case_info.get("vehicles")
+    vehicles = [
+        Drone(f"V{idx}", v["position"], v["goal"]) for idx, v in enumerate(vehicles)
+    ]
+
+    buildings = case_info.get("buildings")
+    buildings = [Obstacle(np.array(b["vertices"])) for b in buildings]
+    return vehicles, buildings
+
+
+def create_json(path: str, buildings: list[Obstacle], drones: list[Drone]) -> None:
+    """Creates the json with the case info and writes it to file at path"""
+    p = Path(path)
+    # Convert path to absolute path for checking existence and permissions
+    abs_path = p.resolve()
     height = 1.2
     # this line adds a third dimension to the x,y coordinates of the building patches and creates a building object from each patch
 
-    buildings = [ 
-        {"ID": f"B{idx}",
-        "vertices":
-            np.hstack(
+    buildings = [
+        {
+            "ID": f"B{idx}",
+            "vertices": np.hstack(
                 [
                     building.vertices,
                     np.full((building.vertices.shape[0], 1), height),
                 ]
-            ).tolist()}
+            ).tolist(),
+        }
         for idx, building in enumerate(buildings)
     ]
 
-
-    # buildings = [Building(patch.get_xy()) for patch in self.building_patches]
     vehicles = [
-        {"ID":f"V{idx}",
-         "position": v.position.tolist(),
-         "goal": v.goal.tolist()} for idx, v in enumerate(drones)
+        {"ID": f"V{idx}", "position": v.position.tolist(), "goal": v.goal.tolist()}
+        for idx, v in enumerate(drones)
     ]
 
-    c = {name:{
-         "buildings" : buildings,
-         "vehicles" : vehicles
-         }
-    }
-    print(c)
-    dump_to_json("scenebuilder.json", c)
+    c = {"scenebuilder": {"buildings": buildings, "vehicles": vehicles}}
+    # if abs_path extension is .json, do somethign
+    dump_to_json(abs_path, c)
+    if abs_path.suffix == ".geojson":
+        c = convert_to_geojson(abs_path, "scenebuilder")
+        dump_to_json(abs_path, c)
 
 
-
-def get_from_json(case:dict)->tuple[list[Drone],list[Obstacle]]:
-    case_info:dict = next(iter(case.values()))
-    vehicles = case_info.get('vehicles')
-    vehicles = [Drone(f"V{idx}",v['position'],v['goal']) for idx,v in enumerate(vehicles)]
-
-    buildings = case_info.get('buildings')
-    buildings = [Obstacle(b['vertices']) for b in buildings]
-    return vehicles, buildings
-
-# def generate_case(name: str, buildings: list[Obstacle], drones: list[Drone]) -> Case:
-#     height = 1.2
-#     # this line adds a third dimension to the x,y coordinates of the building patches and creates a building object from each patch
-
-#     buildings = [ 
-#         Building(
-#             np.hstack(
-#                 [
-#                     building.vertices,
-#                     np.full((building.vertices.shape[0], 1), height),
-#                 ]
-#             )
-#         )
-#         for building in buildings
-#     ]
+# this Class is not finished yet TODO
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()  # Convert numpy arrays to lists
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
 
 
-#     # buildings = [Building(patch.get_xy()) for patch in self.building_patches]
-#     c = Case(name=name)
-#     c.buildings = buildings
-#     # c.vehicle_list = []
-#     c.vehicle_list = [
-#         Vehicle(source_strength=1, imag_source_strength=0.5) for v in drones
-#     ]
-#     for idx, d in enumerate(drones):
-#         c.vehicle_list[idx].Set_Position(d.position)
-#         c.vehicle_list[idx].Set_Goal(goal=d.goal, goal_strength=5, safety=None)
-#         c.vehicle_list[idx].Go_to_Goal(
-#             altitude=0.5, AoAsgn=0, t_start=0, Vinfmag=0
-#         )  # FIXME add these to the json
+def validate_json_path(path: str, exit=False) -> dict:
+    """Check if json input path is valid
+    returns:
+    0 if the path is invalid and/or if the file doesn't end in .json
+    1 if the path is valid and ends in .json but does not exist
+    2 if 1 but file exists
 
-#     from gflow.arena import ArenaMap
-#     c.arena = ArenaMap(c.buildings)
-#     set_new_attribute(c, "imag_source_strength", new_attribute_value=1)
-#     set_new_attribute(c, "source_strength", new_attribute_value=1)
-#     set_new_attribute(c, "dynamics_type", new_attribute_value="radius")
-#     set_new_attribute(c, "turn_radius", new_attribute_value=0)
-#     set_new_attribute(c, "v_free_stream", new_attribute_value=1)
-#     set_new_attribute(c, "sink_strength", new_attribute_value=5)
+    system will quit if exit=True"""
+    # Create a Path object
+    p = Path(path)
+    # Convert path to absolute path for checking existence and permissions
+    abs_path = p.resolve()
+    pathOK = 0
+
+    if abs_path.is_dir():
+        info = f"{abs_path} is a directory.\nPlease enter path ending with a .json file"
+    # Check if the directory exists and is writable
+    elif not abs_path.parent.exists() or not abs_path.parent.is_dir():
+        info = (
+            f"The directory '{abs_path.parent}' does not exist or is not a directory."
+        )
+    elif not os.access(abs_path.parent, os.W_OK):
+        info = f"The directory '{abs_path.parent}' is not writable."
+    # Check if the path ends with .json
+    elif not path.endswith(".json") and not path.endswith(".geojson"):
+        info = f"The file name '{abs_path.name}' must end with '.json' or '.geojson."
+    elif not abs_path.exists():
+        info = f"Warning:The file '{abs_path}' does not exist."
+        pathOK = 1
+    else:
+        info = f"File {abs_path.name} exists"
+        pathOK = 2
+
+    if pathOK == 0 and exit:
+        sys.exit(1)
+    else:
+        return {"result": pathOK, "info": info}
 
 
+def convert_to_geojson(input_file: str, case_name: str):
+    # Parse the JSON data
+    data = load_from_json(input_file)
+    geojson = {"type": "FeatureCollection", "features": []}
 
-#     # pprint.pprint(c)
-#     # generator = Cases(filename="gui_testing.json")
-#     # generator.add_case(c)
-#     # generator.update_json()
+    # Process each building to convert it into a GeoJSON Polygon
+    for building in data[case_name]["buildings"]:
+        polygon = {
+            "type": "Feature",
+            "properties": {"ID": building["ID"], "type": "building"},
+            "geometry": {"type": "Polygon", "coordinates": [[]]},
+        }
+        for vertex in building["vertices"]:
+            # Assuming z-coordinate is not needed for the polygon display
+            polygon["geometry"]["coordinates"][0].append([vertex[0], vertex[1]])
 
-#     # complete_case = generator.get_case("gui_testing.json", name)
-#     # complete_case.max_avoidance_distance = 3
-#     # print(complete_case)
-#     return c
+        # Ensure the polygon is closed (first vertex is the same as the last)
+        if (
+            polygon["geometry"]["coordinates"][0][0]
+            != polygon["geometry"]["coordinates"][0][-1]
+        ):
+            polygon["geometry"]["coordinates"][0].append(
+                polygon["geometry"]["coordinates"][0][0]
+            )
+
+        geojson["features"].append(polygon)
+
+    # Process each vehicle to convert it into a GeoJSON LineString
+    for vehicle in data[case_name]["vehicles"]:
+        line = {
+            "type": "Feature",
+            "properties": {"ID": vehicle["ID"], "type": "vehicle"},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        vehicle["position"][0],
+                        vehicle["position"][1],
+                    ],  # Starting coordinate
+                    [vehicle["goal"][0], vehicle["goal"][1]],  # Ending coordinate
+                ],
+            },
+        }
+        geojson["features"].append(line)
+    return geojson
 
 
-# def run_case(case: Case):
-#     update_every = 1
+def convert_from_geojson(geojson_input: str):
+    # Parse the GeoJSON data
+    geojson = load_from_json(geojson_input)
 
-#     result = run_simulation(
-#         case,
-#         t=2000,
-#         update_every=update_every,
-#         stop_at_collision=False
-#         )
-#     asdf = PlotTrajectories(case, update_every=update_every)
-#     # asdf = plt_utils.plot_trajectories(my_case) # Old plot
+    original_format = {"scenebuilder": {"buildings": [], "vehicles": []}}
 
-#     asdf.show()
-#     return result
+    # Process each feature in the GeoJSON
+    for feature in geojson["features"]:
+        if feature["geometry"]["type"] == "Polygon":
+            # Assume it's a building
+            building = {"ID": feature["properties"].get("ID"), "vertices": []}
+            # Extract vertices; assume the first list in coordinates is the polygon ring
+            for vertex in feature["geometry"]["coordinates"][0]:
+                # Append vertices with a default z-coordinate since it's not in the GeoJSON
+                building["vertices"].append(
+                    vertex + [1.2]
+                )  # Adding a default z-coordinate
+            original_format["scenebuilder"]["buildings"].append(building)
+        elif feature["geometry"]["type"] == "LineString":
+            # Assume it's a vehicle
+            vehicle = {
+                "ID": feature["properties"].get("ID"),
+                "position": feature["geometry"]["coordinates"][0]
+                + [0.5],  # Adding a default z-coordinate
+                "goal": feature["geometry"]["coordinates"][1]
+                + [0.5],  # Adding a default z-coordinate
+            }
+            original_format["scenebuilder"]["vehicles"].append(vehicle)
+
+    return original_format

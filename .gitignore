@@ -1,8 +1,15 @@
+# ignore any json files in the main project directory 
+# json files elsewhere are ok
+/*.json
+/*.geojson
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+#macOS related files
+.DS_Store
 # C extensions
 *.so
 
