@@ -19,7 +19,7 @@ class ActionsStack:
         try:
             self.actions.remove((action_type, action))
         except ValueError:
-            # this is in case a json was loaded and therefore the 
+            # this is in case a json was loaded and therefore the
             # object is not in the stack
             pass
 

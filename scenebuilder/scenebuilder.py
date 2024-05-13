@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .entities import Drone, Obstacle
-from .utils import distance_between_points, create_json, get_from_json
+from .utils import distance_between_points, create_json, get_case_from_dict, convert_from_geojson
 from .utils import load_from_json, validate_json_path
 from .patch_manager import PatchManager
 from .actions_stack import ActionsStack
@@ -15,6 +15,7 @@ from threading import Timer
 from pathlib import Path
 import traceback
 import os
+
 
 class SceneBuilder(Observer, Observable):
 
@@ -31,32 +32,35 @@ class SceneBuilder(Observer, Observable):
         self._plot_setup()
         # Define variables
         self._setup_data()
-        
+
         # Connect event handlers
         self._connect_event_handlers()
 
-    def set_output_path(self, path: str, exit = False, skip_check = False) -> None:
-        '''Set output path to validated path. call sys.exit() if exit is True and path is invalid'''
+    def set_output_path(self, path: str, exit=False, skip_check=False) -> None:
+        """Set output path to validated path. call sys.exit() if exit is True and path is invalid"""
         try:
             if not skip_check:
                 # Validate the path if not skipping
                 response = validate_json_path(path, exit)
-                result = response['result']
-                #if path invalid, don't set
+                result = response["result"]
+                # if path invalid, don't set
                 if result == 0:
                     return
         finally:
             # This block runs whether validation was skipped, passed, or failed.
             self.output_path = path
             self.ui_components.modify_current_file_text(self.output_path)
-            self._show_warning(f'Set new output path\n{path}', 3, color='g')
+            self._show_warning(f"Set new output path\n{path}", 3, color="g")
 
     def load_scene(self, path: str) -> None:
         """Populates the scene with the obstacles and drones in the specified json
         path: path to compatible json file"""
         self._reset()
-        case_info = load_from_json(path)
-        drones, buildings = get_from_json(case_info)
+        if path.endswith('.geojson'):
+            case_info = convert_from_geojson(path)
+        else:
+            case_info = load_from_json(path)
+        drones, buildings = get_case_from_dict(case_info)
         self.drones = drones
         self.buildings = buildings
         for building in self.buildings:
@@ -73,7 +77,7 @@ class SceneBuilder(Observer, Observable):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        fig.subplots_adjust(bottom=0.1, top=0.85)
+        fig.subplots_adjust(bottom=0.1, top=0.85, left=0)
 
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
@@ -99,16 +103,14 @@ class SceneBuilder(Observer, Observable):
             fontsize=10,
             bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
         )
-        #modifiable/interactive ui elements are in ui_components.py
+        # modifiable/interactive ui elements are in ui_components.py
 
-        
-        
         self.fig, self.ax = fig, ax
 
         return None
-    
+
     def _setup_data(self) -> None:
-        '''define additional attributes'''
+        """define additional attributes"""
         self.ui_components = UIComponents(self.ax)
         self.ui_components.add_observer(self)
 
@@ -117,8 +119,8 @@ class SceneBuilder(Observer, Observable):
 
         self.patch_manager = PatchManager(self.ax)
         self.output_path = "scenebuilder.json"
-        
-        self.timer:Timer|None = None
+
+        self.timer: Timer | None = None
 
         self.drones: list[Drone] = []
         self.buildings: list[Obstacle] = []
@@ -126,7 +128,7 @@ class SceneBuilder(Observer, Observable):
         self.mode = "building"  # 'building', 'drone', or None
         self.actions_stack = ActionsStack()  # New line to track the actions
 
-        self.selected_drone: Drone|None = None
+        self.selected_drone: Drone | None = None
         self.initial_click_position = None
         self.selected_vertex = None
         self.warning = self.ax.annotate(
@@ -138,7 +140,7 @@ class SceneBuilder(Observer, Observable):
             color="red",
             ha="center",
             bbox=dict(boxstyle="round", fc="w", ec="0.5", alpha=1),
-            wrap=True
+            wrap=True,
         )
 
         self.warning.set_visible(False)  # Start with warning hidden
@@ -172,21 +174,24 @@ class SceneBuilder(Observer, Observable):
         self._update()
 
     def _connect_event_handlers(self) -> None:
-        #supported values are 'resize_event', 'draw_event', 'key_press_event', 'key_release_event', 'button_press_event', 'button_release_event', 'scroll_event', 'motion_notify_event', 'pick_event', 'figure_enter_event', 'figure_leave_event', 'axes_enter_event', 'axes_leave_event', 'close_event'
-        self.on_pick=self.fig.canvas.mpl_connect("pick_event", self._on_pick)
-        self.on_click=self.fig.canvas.mpl_connect("button_press_event", self._on_click)
-        self.on_key=self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
+        # supported values are 'resize_event', 'draw_event', 'key_press_event', 'key_release_event', 'button_press_event', 'button_release_event', 'scroll_event', 'motion_notify_event', 'pick_event', 'figure_enter_event', 'figure_leave_event', 'axes_enter_event', 'axes_leave_event', 'close_event'
+        self.on_pick = self.fig.canvas.mpl_connect("pick_event", self._on_pick)
+        self.on_click = self.fig.canvas.mpl_connect(
+            "button_press_event", self._on_click
+        )
+        self.on_key = self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
         self.fig.canvas.mpl_connect("button_release_event", self._on_button_release)
         self.fig.canvas.mpl_connect("motion_notify_event", self._on_mouse_move)
         # self.resize=self.fig.canvas.mpl_connect('resize_event', lambda x:print("tool triggered"))
         return None
-    
-    def _disconnect_event_handlers(self)->None:
+
+    def _disconnect_event_handlers(self) -> None:
         self.fig.canvas.mpl_disconnect(self.on_click)
         self.fig.canvas.mpl_disconnect(self.on_key)
         self.fig.canvas.mpl_disconnect(self.on_pick)
 
         return None
+
     def _handle_vertex_movement(self, event):
         """Returns True if a click is near a vertex of an obstacle"""
         if not self.buildings:
@@ -368,7 +373,6 @@ class SceneBuilder(Observer, Observable):
         self.initial_click_position = [event.mouseevent.xdata, event.mouseevent.ydata]
 
     def _on_mouse_move(self, event):
-
         # check to make sure the mouse is still in the main axes
         # and not over a button or other axes object
         # or outside the axes altogether
@@ -419,6 +423,7 @@ class SceneBuilder(Observer, Observable):
             # Redraw to show the moved building
             self._update()
 
+
     def _on_button_release(self, event):
         self.initial_click_position = None
         self.selected_drone = None
@@ -454,8 +459,8 @@ class SceneBuilder(Observer, Observable):
         elif event.key == "escape":
             self._clear_temp_elements()
 
-    def _show_warning(self, text:str, duration:float = 3, **kwargs)->None:
-        '''Display the central warning temporarily, set kwargs as per ax.annotate'''
+    def _show_warning(self, text: str, duration: float = 3, **kwargs) -> None:
+        """Display the central warning temporarily, set kwargs as per ax.annotate"""
         self.warning.set_text(text)
         self.warning.set(**kwargs)
         self.warning.set_visible(True)  # Start with warning hidden
@@ -465,7 +470,7 @@ class SceneBuilder(Observer, Observable):
             self.timer.cancel()
         self.timer = Timer(duration, self._hide_warning)
         self.timer.start()
-        
+
     def _update(self):
         # draw the canvas again
         self.fig.canvas.draw()
@@ -534,74 +539,83 @@ class SceneBuilder(Observer, Observable):
             self.actions_stack.add_action("building", building)
             self._update()
 
-    def _verify_path(self, path:str)->bool:
-        '''Verify if path is a json file (existing or not) in a valid directory
-        and show relevant warnings'''
+    def _verify_path(self, path: str) -> bool:
+        """Verify if path is a json file (existing or not) in a valid directory
+        and show relevant warnings"""
         response = validate_json_path(path)
-        result, info = response['result'], response['info']
-        if result!=0:
-            self._show_warning(info, 3, color='g')
+        result, info = response["result"], response["info"]
+        if result != 0:
+            self._show_warning(info, 3, color="g")
             return True
         else:
-            self._show_warning(info,duration=3,color='r')
-            return False        
+            self._show_warning(info, duration=3, color="r")
+            return False
 
-    def _text_box_submit(self, path:str):
+    def _text_box_submit(self, path: str):
         if self._verify_path(path):
-            #set the new path and overwrite any previous warnings
+            # set the new path and overwrite any previous warnings
             self.set_output_path(path, skip_check=True)
 
-    def _load_json(self, path:str):
-        '''Checks validity of input json, shows relevant warnings and calls load_scene'''
-        #first save the existing plot to temporary file
-        create_json('TEMP.json', self.buildings, self.drones)
+    def _load_json(self, path: str):
+        """Checks validity of input json, shows relevant warnings and calls load_scene"""
         if not self._verify_path(path):
             return
+        # first save the existing plot to temporary file
+        create_json("TEMP.json", self.buildings, self.drones)
         try:
             self.load_scene(path)
-            self._show_warning(f'Loaded {Path(path).resolve().name}', duration=3, color='g')
+            self._show_warning(
+                f"Loaded {Path(path).resolve().name}", duration=3, color="g"
+            )
         except FileNotFoundError as e:
-            self._show_warning(f'Error: {path} does not exist.', 3, color='r')
-            #TODO print full exception
+            self._show_warning(f"Error: {path} does not exist.", 3, color="r")
+            # TODO print full exception
             traceback.print_exc()
-            #load back the temporary file
-            self.load_scene('TEMP.json')
+            # load back the temporary file
+            self.load_scene("TEMP.json")
         except Exception as e:
-            #not ideal but catch and json formatting errors for now
-            self._show_warning(f'JSON Decode Error: {Path(path).resolve().name} format incompatible', 3, color='r')
-            #TODO print full exception
+            # not ideal but catch and json formatting errors for now
+            self._show_warning(
+                f"JSON Decode Error: {Path(path).resolve().name} format incompatible",
+                3,
+                color="r",
+            )
+            # TODO print full exception
             traceback.print_exc()
-            #load back the temporary file
-            self.load_scene('TEMP.json')
-        
-        os.remove('TEMP.json')
-        
-    def _create_json(self, path:str):
+            # load back the temporary file
+            self.load_scene("TEMP.json")
+
+        os.remove("TEMP.json")
+
+    def _create_json(self, path: str):
         if not self.drones:
-            #amber warning for no drones
-            self._show_warning(f"Saving scene to file: {path}\nWARNING, No Drones!", duration=3, color = (1,0.75,0,1))
+            # amber warning for no drones
+            self._show_warning(
+                f"Saving scene to file: {path}\nWARNING, No Drones!",
+                duration=3,
+                color=(1, 0.75, 0, 1),
+            )
         else:
-            #green warning if at least one drone
-            self._show_warning(f'Saving to file: \n{path}', duration=3, color = 'g')
+            # green warning if at least one drone
+            self._show_warning(f"Saving to file: \n{path}", duration=3, color="g")
         create_json(path, self.buildings, self.drones)
 
     def _call(self, event: str, *args, **kwargs):
-        '''class called by observers triggered by button or text_box, see ui_components.py and observer_utils.py'''
+        """class called by observers triggered by button or text_box, see ui_components.py and observer_utils.py"""
         if event == "switch_mode":
             self._switch_mode()
         elif event == "reset":
             self._reset()
         elif event == "create_json":
-            path = kwargs.get("input",self.output_path)
+            path = kwargs.get("input", self.output_path)
             self.set_output_path(path)
             self._create_json(path=path)
         elif event == "load_json":
             path = kwargs.get("input")
             self._load_json(path)
-        elif event=="text_box_submit":
+        elif event == "text_box_submit":
             path = kwargs["input"]
             self._text_box_submit(path)
-
 
     def _reset(self):
         self.selected_building = None
@@ -643,5 +657,4 @@ class SceneBuilder(Observer, Observable):
 # cooperating or not (can turn on and off for each drone)
 
 
-
-#for status here:https://stackoverflow.com/questions/70842267/in-matplotlib-how-do-i-catch-that-event-zoom-tool-has-been-selected
+# for status here:https://stackoverflow.com/questions/70842267/in-matplotlib-how-do-i-catch-that-event-zoom-tool-has-been-selected

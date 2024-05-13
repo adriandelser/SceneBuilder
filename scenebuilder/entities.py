@@ -74,6 +74,9 @@ class Obstacle(Entity):
     def __init__(self, vertices: ArrayLike):
         super().__init__(ID="building", position=None)
         # self.vertices = self.sort_vertices(vertices[:, :2])
+        # Ensure the first and last vertices are not the same
+        if np.array_equal(vertices[0, :2], vertices[-1, :2]):
+            vertices = vertices[:-1, :2]  # Remove the last vertex if it's the same as the first one
         self.vertices = vertices[:, :2]
 
     def sort_vertices(self, vertices):
@@ -116,7 +119,6 @@ class Obstacle(Entity):
         # Compute the distance of the point from the line segment
         line_vector = np.array(end) - np.array(start)
         point_vector = np.array(point) - np.array(start)
-
         # Compute the projection of point_vector onto line_vector
         proj_length = np.dot(point_vector, line_vector) / np.linalg.norm(line_vector)
 

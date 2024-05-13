@@ -132,4 +132,3 @@ class ObstaclePatch(Polygon):
     def update_visual(self):
         """Update the visual representation based on the building state."""
         self.set_xy(self.building.vertices)
-

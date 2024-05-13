@@ -40,7 +40,7 @@ def dump_to_json(file_path: str, data: dict) -> dict:
         return None
 
 
-def get_from_json(case: dict) -> tuple[list[Drone], list[Obstacle]]:
+def get_case_from_dict(case: dict) -> tuple[list[Drone], list[Obstacle]]:
     """Get vehicles and building from json"""
     case_info: dict = next(iter(case.values()))
     vehicles = case_info.get("vehicles")
@@ -80,7 +80,11 @@ def create_json(path: str, buildings: list[Obstacle], drones: list[Drone]) -> No
     ]
 
     c = {"scenebuilder": {"buildings": buildings, "vehicles": vehicles}}
+    #if abs_path extension is .json, do somethign
     dump_to_json(abs_path, c)
+    if abs_path.suffix == ".geojson":
+        c = convert_to_geojson(abs_path,'scenebuilder')
+        dump_to_json(abs_path, c)
 
 
 # this Class is not finished yet TODO
@@ -114,8 +118,8 @@ def validate_json_path(path:str, exit = False)->dict:
     elif not os.access(abs_path.parent, os.W_OK):
         info = f"The directory '{abs_path.parent}' is not writable."
     # Check if the path ends with .json
-    elif not path.endswith(".json"):
-        info = f"The file name '{abs_path.name}' must end with '.json'."
+    elif not path.endswith(".json") and not path.endswith(".geojson"):
+        info = f"The file name '{abs_path.name}' must end with '.json' or '.geojson."
     elif not abs_path.exists():
         info = f"Warning:The file '{abs_path}' does not exist."
         pathOK=1
@@ -129,5 +133,86 @@ def validate_json_path(path:str, exit = False)->dict:
         sys.exit(1)
 
 
-    # If all checks are passed, confirm the path is valid
-    # print(f"The path: {path} is valid.")
+
+
+
+def convert_to_geojson(input_file:str, case_name:str):
+    # Parse the JSON data
+    data = load_from_json(input_file)
+    geojson = {"type": "FeatureCollection", "features": []}
+
+    # Process each building to convert it into a GeoJSON Polygon
+    for building in data[case_name]["buildings"]:
+        polygon = {
+            "type": "Feature",
+            "properties": {"ID": building["ID"], "type": "building"},
+            "geometry": {"type": "Polygon", "coordinates": [[]]},
+        }
+        for vertex in building["vertices"]:
+            # Assuming z-coordinate is not needed for the polygon display
+            polygon["geometry"]["coordinates"][0].append([vertex[0], vertex[1]])
+
+        # Ensure the polygon is closed (first vertex is the same as the last)
+        if (
+            polygon["geometry"]["coordinates"][0][0]
+            != polygon["geometry"]["coordinates"][0][-1]
+        ):
+            polygon["geometry"]["coordinates"][0].append(
+                polygon["geometry"]["coordinates"][0][0]
+            )
+
+        geojson["features"].append(polygon)
+
+    # Process each vehicle to convert it into a GeoJSON LineString
+    for vehicle in data[case_name]["vehicles"]:
+        line = {
+            "type": "Feature",
+            "properties": {"ID": vehicle["ID"], "type": "vehicle"},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        vehicle["position"][0],
+                        vehicle["position"][1],
+                    ],  # Starting coordinate
+                    [vehicle["goal"][0], vehicle["goal"][1]],  # Ending coordinate
+                ],
+            },
+        }
+        geojson["features"].append(line)
+    return geojson
+
+def convert_from_geojson(geojson_input:str):
+    # Parse the GeoJSON data
+    geojson = load_from_json(geojson_input)  
+
+    original_format = {
+        "scenebuilder": {
+            "buildings": [],
+            "vehicles": []
+        }
+    }
+    
+    # Process each feature in the GeoJSON
+    for feature in geojson['features']:
+        if feature['geometry']['type'] == 'Polygon':
+            # Assume it's a building
+            building = {
+                "ID": feature['properties'].get('ID'),
+                "vertices": []
+            }
+            # Extract vertices; assume the first list in coordinates is the polygon ring
+            for vertex in feature['geometry']['coordinates'][0]:
+                # Append vertices with a default z-coordinate since it's not in the GeoJSON
+                building['vertices'].append(vertex + [1.2])  # Adding a default z-coordinate
+            original_format['scenebuilder']['buildings'].append(building)
+        elif feature['geometry']['type'] == 'LineString':
+            # Assume it's a vehicle
+            vehicle = {
+                "ID": feature['properties'].get('ID'),
+                "position": feature['geometry']['coordinates'][0] + [0.5],  # Adding a default z-coordinate
+                "goal": feature['geometry']['coordinates'][1] + [0.5]  # Adding a default z-coordinate
+            }
+            original_format['scenebuilder']['vehicles'].append(vehicle)
+    
+    return original_format

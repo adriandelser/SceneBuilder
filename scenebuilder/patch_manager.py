@@ -6,6 +6,7 @@ import numpy as np
 from .entities import Obstacle, Drone
 from .patches import ObstaclePatch, DronePatch, Marker
 
+
 class PatchManager:
     def __init__(self, ax: plt.Axes):
         self.ax = ax
@@ -108,5 +109,3 @@ class PatchManager:
         self.remove_temp_drone_start()
         self.building_patches.clear()
         self.drone_patches.clear()
-
-    

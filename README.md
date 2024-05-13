@@ -20,9 +20,6 @@ pip install scenebuilder
 
 This command installs SceneBuilder along with numpy and matplotlib, ensuring that everything needed to run the GUI is properly set up.
 
-
-
-
 ## Prerequisites
 
 SceneBuilder's prerequisites are defined in the pyproject.toml file and include Matplotlib and numpy.
@@ -43,6 +40,7 @@ scenebuilder --load path/to/scene.json --output path/to/output.json
 ```
 
 ### In Code
+
 To use SceneBuilder in code, you need to create an instance of the `SceneBuilder` class and invoke the `draw_scene()` method. Below is a simple example to get you started:
 
 ```python
@@ -68,8 +66,6 @@ Specify the path to save your output json to:
 scene.set_output_path("path/to/output.json")
 scene.draw_scene()
 ```
-
-
 
 ## Features
 
