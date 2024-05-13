@@ -76,7 +76,9 @@ class Obstacle(Entity):
         # self.vertices = self.sort_vertices(vertices[:, :2])
         # Ensure the first and last vertices are not the same
         if np.array_equal(vertices[0, :2], vertices[-1, :2]):
-            vertices = vertices[:-1, :2]  # Remove the last vertex if it's the same as the first one
+            vertices = vertices[
+                :-1, :2
+            ]  # Remove the last vertex if it's the same as the first one
         self.vertices = vertices[:, :2]
 
     def sort_vertices(self, vertices):

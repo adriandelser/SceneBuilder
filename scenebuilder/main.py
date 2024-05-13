@@ -4,12 +4,7 @@ from scenebuilder import SceneBuilder
 
 def main():
     parser = argparse.ArgumentParser(description="Launch the SceneBuilder GUI")
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        help="Set the output path for saving the scene as JSON",
-    )
+
     parser.add_argument(
         "-l",
         "--load",
@@ -23,9 +18,6 @@ def main():
 
     if args.load:
         app.load_scene(args.load)
-
-    if args.output:
-        app.set_output_path(args.output, exit=True)
 
     app.draw_scene()
 

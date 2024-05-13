@@ -5,7 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .entities import Drone, Obstacle
-from .utils import distance_between_points, create_json, get_case_from_dict, convert_from_geojson
+from .utils import (
+    distance_between_points,
+    create_json,
+    get_case_from_dict,
+    convert_from_geojson,
+)
 from .utils import load_from_json, validate_json_path
 from .patch_manager import PatchManager
 from .actions_stack import ActionsStack
@@ -36,27 +41,11 @@ class SceneBuilder(Observer, Observable):
         # Connect event handlers
         self._connect_event_handlers()
 
-    def set_output_path(self, path: str, exit=False, skip_check=False) -> None:
-        """Set output path to validated path. call sys.exit() if exit is True and path is invalid"""
-        try:
-            if not skip_check:
-                # Validate the path if not skipping
-                response = validate_json_path(path, exit)
-                result = response["result"]
-                # if path invalid, don't set
-                if result == 0:
-                    return
-        finally:
-            # This block runs whether validation was skipped, passed, or failed.
-            self.output_path = path
-            self.ui_components.modify_current_file_text(self.output_path)
-            self._show_warning(f"Set new output path\n{path}", 3, color="g")
-
     def load_scene(self, path: str) -> None:
         """Populates the scene with the obstacles and drones in the specified json
         path: path to compatible json file"""
         self._reset()
-        if path.endswith('.geojson'):
+        if path.endswith(".geojson"):
             case_info = convert_from_geojson(path)
         else:
             case_info = load_from_json(path)
@@ -77,7 +66,7 @@ class SceneBuilder(Observer, Observable):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        fig.subplots_adjust(bottom=0.1, top=0.85, left=0)
+        fig.subplots_adjust(bottom=0.1, top=0.85)
 
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
@@ -146,6 +135,21 @@ class SceneBuilder(Observer, Observable):
         self.warning.set_visible(False)  # Start with warning hidden
 
         return None
+
+    def _set_output_path(self, path: str, exit=False, skip_check=False) -> None:
+        """Set output path to validated path. call sys.exit() if exit is True and path is invalid"""
+        try:
+            if not skip_check:
+                # Validate the path if not skipping
+                response = validate_json_path(path, exit)
+                result = response["result"]
+                # if path invalid, don't set
+                if result == 0:
+                    return
+        finally:
+            # This block runs whether validation was skipped, passed, or failed.
+            self.output_path = path
+            self._show_warning(f"Set new output path\n{path}", 3, color="g")
 
     @property
     def selected_building(self):
@@ -423,7 +427,6 @@ class SceneBuilder(Observer, Observable):
             # Redraw to show the moved building
             self._update()
 
-
     def _on_button_release(self, event):
         self.initial_click_position = None
         self.selected_drone = None
@@ -450,8 +453,8 @@ class SceneBuilder(Observer, Observable):
         if event.key in ["cmd+z", "ctrl+z"]:
             self._undo_last_action()
 
-        if event.key in ["cmd+s", "ctrl+s"]:
-            self._create_json(self.output_path)
+        # if event.key in ["cmd+s", "ctrl+s"]:
+        #     self._create_json(self.output_path)
 
         elif event.key in ["backspace", "delete"]:
             self._delete_selected_building()
@@ -554,7 +557,7 @@ class SceneBuilder(Observer, Observable):
     def _text_box_submit(self, path: str):
         if self._verify_path(path):
             # set the new path and overwrite any previous warnings
-            self.set_output_path(path, skip_check=True)
+            self._set_output_path(path, skip_check=True)
 
     def _load_json(self, path: str):
         """Checks validity of input json, shows relevant warnings and calls load_scene"""
@@ -606,9 +609,9 @@ class SceneBuilder(Observer, Observable):
             self._switch_mode()
         elif event == "reset":
             self._reset()
-        elif event == "create_json":
+        elif event == "save":
             path = kwargs.get("input", self.output_path)
-            self.set_output_path(path)
+            self._set_output_path(path)
             self._create_json(path=path)
         elif event == "load_json":
             path = kwargs.get("input")

@@ -28,15 +28,15 @@ SceneBuilder's prerequisites are defined in the pyproject.toml file and include 
 
 ### Using Command-Line Options
 
-You can use SceneBuilder directly from the command line with the following options:
+You can use SceneBuilder directly from the command line with the following option:
 
-- `-o`, `--output`: Specify the path where the scene should be saved as a JSON file.
 - `-l`, `--load`: Specify a JSON file path to load an existing scene.
 
 Example usage:
 
 ```bash
-scenebuilder --load path/to/scene.json --output path/to/output.json
+scenebuilder --load path/to/scene.json
+scenebuilder -l     path/to/scene.geojson
 ```
 
 ### In Code
@@ -60,13 +60,6 @@ scene.load_scene("path/to/your_file.json")
 scene.draw_scene()
 ```
 
-Specify the path to save your output json to:
-
-```python
-scene.set_output_path("path/to/output.json")
-scene.draw_scene()
-```
-
 ## Features
 
 - **Draw Obstacles**: Click within the GUI to place vertices of polygons that represent obstacles. Press Tab to complete an obstacle.
@@ -75,13 +68,13 @@ scene.draw_scene()
 - **Move or adjust existing obstacles/drones**: Obstacles and drones can be moved by clicking and dragging. Drone start and goal points, as well as existing obstacle vertices can be moved in the same way.
 - **Switch between Obstacle and Drone Modes**: Press b to switch to building/obstacle mode. Press d to switch to drone/agent mode. Alternatively click the Switch button on the bottom left of the gui.
 - **Delete obstacles**: Select the obstacle and press delete or backspace. NOTE this is not yet available for drones.
-- **Remove unwanted points**: To remove unwanted points (either obstacle vertices or a drone start point), press escape.
-- **Undo drone/obstacle placement**: To remove the last obstacle or drone, press ctrl+z.
+- **Clear temporary points**: To clear building vertices prior to completing the building, or to remove a drone's starting point before placing the goal, press 'esc' or 'escape'.
+- **Undo drone/obstacle placement**: To remove the last obstacle or drone that was placed, press ctrl+z.
 - **Reset Scene**: To reset the scene to a blank canvas, click the Reset button in the gui.
 
 ## Saving Scenes
 
-Once you have created a scene, you can save it to a JSON or GeoJSON file by clicking the 'Save' button in the GUI. You will then be prompted to select whether you want to use our basic JSON format or GeoGSON. This file can then be used as input for path planning algorithms that require predefined scenes with obstacles and paths.
+Once you have created a scene, you can save it to a JSON or GeoJSON file by clicking the 'Save' button in the GUI. You will then be prompted to select whether you want to use our basic JSON format or GeoGSON.
 
 **_Unless otherwise specified, the file is saved as "scenebuilder.json" in the current working directory._**
 

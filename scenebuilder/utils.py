@@ -42,6 +42,7 @@ def dump_to_json(file_path: str, data: dict) -> dict:
 
 def get_case_from_dict(case: dict) -> tuple[list[Drone], list[Obstacle]]:
     """Get vehicles and building from json"""
+    # get the first case in the dict
     case_info: dict = next(iter(case.values()))
     vehicles = case_info.get("vehicles")
     vehicles = [
@@ -80,10 +81,10 @@ def create_json(path: str, buildings: list[Obstacle], drones: list[Drone]) -> No
     ]
 
     c = {"scenebuilder": {"buildings": buildings, "vehicles": vehicles}}
-    #if abs_path extension is .json, do somethign
+    # if abs_path extension is .json, do somethign
     dump_to_json(abs_path, c)
     if abs_path.suffix == ".geojson":
-        c = convert_to_geojson(abs_path,'scenebuilder')
+        c = convert_to_geojson(abs_path, "scenebuilder")
         dump_to_json(abs_path, c)
 
 
@@ -96,25 +97,27 @@ class MyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def validate_json_path(path:str, exit = False)->dict:
-    '''Check if json input path is valid
+def validate_json_path(path: str, exit=False) -> dict:
+    """Check if json input path is valid
     returns:
     0 if the path is invalid and/or if the file doesn't end in .json
     1 if the path is valid and ends in .json but does not exist
     2 if 1 but file exists
 
-    system will quit if exit=True'''
+    system will quit if exit=True"""
     # Create a Path object
     p = Path(path)
     # Convert path to absolute path for checking existence and permissions
     abs_path = p.resolve()
     pathOK = 0
-    
+
     if abs_path.is_dir():
         info = f"{abs_path} is a directory.\nPlease enter path ending with a .json file"
     # Check if the directory exists and is writable
     elif not abs_path.parent.exists() or not abs_path.parent.is_dir():
-        info=f"The directory '{abs_path.parent}' does not exist or is not a directory."
+        info = (
+            f"The directory '{abs_path.parent}' does not exist or is not a directory."
+        )
     elif not os.access(abs_path.parent, os.W_OK):
         info = f"The directory '{abs_path.parent}' is not writable."
     # Check if the path ends with .json
@@ -122,21 +125,18 @@ def validate_json_path(path:str, exit = False)->dict:
         info = f"The file name '{abs_path.name}' must end with '.json' or '.geojson."
     elif not abs_path.exists():
         info = f"Warning:The file '{abs_path}' does not exist."
-        pathOK=1
+        pathOK = 1
     else:
-        info = f'File {abs_path.name} exists'
-        pathOK=2
+        info = f"File {abs_path.name} exists"
+        pathOK = 2
 
-    if not exit:
-        return {'result': pathOK, 'info': info}
-    elif pathOK == 0:
+    if pathOK == 0 and exit:
         sys.exit(1)
+    else:
+        return {"result": pathOK, "info": info}
 
 
-
-
-
-def convert_to_geojson(input_file:str, case_name:str):
+def convert_to_geojson(input_file: str, case_name: str):
     # Parse the JSON data
     data = load_from_json(input_file)
     geojson = {"type": "FeatureCollection", "features": []}
@@ -182,37 +182,34 @@ def convert_to_geojson(input_file:str, case_name:str):
         geojson["features"].append(line)
     return geojson
 
-def convert_from_geojson(geojson_input:str):
-    # Parse the GeoJSON data
-    geojson = load_from_json(geojson_input)  
 
-    original_format = {
-        "scenebuilder": {
-            "buildings": [],
-            "vehicles": []
-        }
-    }
-    
+def convert_from_geojson(geojson_input: str):
+    # Parse the GeoJSON data
+    geojson = load_from_json(geojson_input)
+
+    original_format = {"scenebuilder": {"buildings": [], "vehicles": []}}
+
     # Process each feature in the GeoJSON
-    for feature in geojson['features']:
-        if feature['geometry']['type'] == 'Polygon':
+    for feature in geojson["features"]:
+        if feature["geometry"]["type"] == "Polygon":
             # Assume it's a building
-            building = {
-                "ID": feature['properties'].get('ID'),
-                "vertices": []
-            }
+            building = {"ID": feature["properties"].get("ID"), "vertices": []}
             # Extract vertices; assume the first list in coordinates is the polygon ring
-            for vertex in feature['geometry']['coordinates'][0]:
+            for vertex in feature["geometry"]["coordinates"][0]:
                 # Append vertices with a default z-coordinate since it's not in the GeoJSON
-                building['vertices'].append(vertex + [1.2])  # Adding a default z-coordinate
-            original_format['scenebuilder']['buildings'].append(building)
-        elif feature['geometry']['type'] == 'LineString':
+                building["vertices"].append(
+                    vertex + [1.2]
+                )  # Adding a default z-coordinate
+            original_format["scenebuilder"]["buildings"].append(building)
+        elif feature["geometry"]["type"] == "LineString":
             # Assume it's a vehicle
             vehicle = {
-                "ID": feature['properties'].get('ID'),
-                "position": feature['geometry']['coordinates'][0] + [0.5],  # Adding a default z-coordinate
-                "goal": feature['geometry']['coordinates'][1] + [0.5]  # Adding a default z-coordinate
+                "ID": feature["properties"].get("ID"),
+                "position": feature["geometry"]["coordinates"][0]
+                + [0.5],  # Adding a default z-coordinate
+                "goal": feature["geometry"]["coordinates"][1]
+                + [0.5],  # Adding a default z-coordinate
             }
-            original_format['scenebuilder']['vehicles'].append(vehicle)
-    
+            original_format["scenebuilder"]["vehicles"].append(vehicle)
+
     return original_format
