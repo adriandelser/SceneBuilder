@@ -36,7 +36,7 @@ class Drone(Entity):
         self.position[:2] += delta
         self.goal[:2] += delta
 
-    def click_near_arrow(self, p0, p1, event, threshold=0.2):
+    def click_near_arrow1(self, p0, p1, event, threshold=0.2):
         click_position = np.array([event.xdata, event.ydata])
         p0 = np.array(p0)
         p1 = np.array(p1)
@@ -66,6 +66,39 @@ class Drone(Entity):
             return True
 
         return False
+    
+    def click_near_arrow(self, p0:np.ndarray, p1:np.ndarray, event,threshold:np.ndarray):
+        click_position = np.array([event.xdata, event.ydata])
+        # Calculate the Euclidean distance from the click position to the start and end points of the arrow
+        dist_start = np.linalg.norm((click_position - p0) / threshold)
+        dist_end = np.linalg.norm((click_position - p1) / threshold)
+        arrow_length = np.linalg.norm((p1 - p0) / threshold)
+        
+        # Using Heron's formula to compute area of triangle formed by start, end, and click points
+        s = (dist_start + dist_end + arrow_length) / 2
+        triangle_area = np.sqrt(s * (s - dist_start) * (s - dist_end) * (s - arrow_length))
+        
+        # Distance from click to the line segment
+        distance_to_line = 2 * triangle_area / arrow_length
+        
+        # Calculate projection of click point onto the arrow line segment
+        dot_product = np.dot(p1 - p0, click_position - p0) / np.dot(p1 - p0, p1 - p0)
+        projected_point = p0 + dot_product * (p1 - p0)
+        
+        # Check if the projected point lies between start and end
+        is_within_segment = np.all(np.minimum(p0, p1) <= projected_point) and np.all(
+            projected_point <= np.maximum(p0, p1)
+        )
+
+        # Calculate vector from click point to its projection on the line (element-wise)
+        distance_vector = click_position - projected_point
+
+        # Element-wise comparison of the absolute distance to the threshold
+        if np.all(np.abs(distance_vector) < threshold) and is_within_segment:
+            return True
+
+        return False
+
 
 
 class Obstacle(Entity):
@@ -105,8 +138,36 @@ class Obstacle(Entity):
         for vertex in self.vertices:
             vertex += delta
 
-    def insert_vertex(self, position, tolerance):
-        """Insert a vertex at a given position if near an edge (position and tolerance in data coordinates)"""
+    # def insert_vertex(self, position, tolerance):
+    #     """Insert a vertex at a given position if near an edge (position and tolerance in data coordinates)"""
+    #     position = np.array(position)
+
+    #     # Compute vectors
+    #     start_points = self.vertices
+    #     end_points = np.roll(self.vertices, -1, axis=0)
+    #     line_vectors = end_points - start_points
+    #     point_vectors = position - start_points
+
+    #     # Compute projections
+    #     line_norms = np.linalg.norm(line_vectors, axis=1)
+    #     proj_lengths = np.einsum('ij,ij->i', point_vectors, line_vectors) / line_norms
+    #     valid_projs = (proj_lengths >= 0) & (proj_lengths <= line_norms)
+
+    #     # Compute distances
+    #     proj_vectors = np.outer(proj_lengths, np.ones(2)) * line_vectors / line_norms[:, None]
+    #     distances = np.linalg.norm(point_vectors - proj_vectors, axis=1)
+
+    #     # Find the edge with minimum distance within tolerance
+    #     near_edges = distances < tolerance
+    #     if np.any(near_edges & valid_projs):
+    #         i = np.where(near_edges & valid_projs)[0][0]
+    #         self.vertices = np.insert(self.vertices, i + 1, position, axis=0)
+    #         return True
+    #     return False
+    
+    def insert_vertex(self, position, tolerance:np.ndarray):
+        """Insert a vertex at a given position if near an edge (position and tolerances in data coordinates)
+        tolerance is an array of shape 2,"""
         position = np.array(position)
 
         # Compute vectors
@@ -120,17 +181,20 @@ class Obstacle(Entity):
         proj_lengths = np.einsum('ij,ij->i', point_vectors, line_vectors) / line_norms
         valid_projs = (proj_lengths >= 0) & (proj_lengths <= line_norms)
 
-        # Compute distances
+        # Compute distances using x and y tolerances
         proj_vectors = np.outer(proj_lengths, np.ones(2)) * line_vectors / line_norms[:, None]
-        distances = np.linalg.norm(point_vectors - proj_vectors, axis=1)
+        distances = np.linalg.norm(
+            (point_vectors - proj_vectors) / tolerance, axis=1
+        )
 
         # Find the edge with minimum distance within tolerance
-        near_edges = distances < tolerance
+        near_edges = distances < 1
         if np.any(near_edges & valid_projs):
             i = np.where(near_edges & valid_projs)[0][0]
             self.vertices = np.insert(self.vertices, i + 1, position, axis=0)
             return True
         return False
+
     
 
     def contains_point(self, point):

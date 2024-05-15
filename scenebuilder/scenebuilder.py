@@ -24,7 +24,7 @@ import os
 
 class SceneBuilder(Observer, Observable):
 
-    CLICK_THRESHOLD = 0.14
+    CLICK_THRESHOLD = np.array([0.14, 0.14])
     FIG_SIZE = (8, 8.5)
     AXIS_LIMITS = (-5, 5)
     PIXEL_TOLERANCE = 20 #within this many pixels a click is considered "on" a line or point
@@ -41,6 +41,9 @@ class SceneBuilder(Observer, Observable):
 
         # Connect event handlers
         self._connect_event_handlers()
+
+        # reset the click thresholds
+        self._reset_click_threshold()
 
     def load_scene(self, path: str) -> None:
         """Populates the scene with the obstacles and drones in the specified json
@@ -67,7 +70,7 @@ class SceneBuilder(Observer, Observable):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
 
-        fig.subplots_adjust(bottom=0.1, top=0.85)
+        fig.subplots_adjust(bottom=0.12, top=0.88)
 
         ax.set_xlim(self.AXIS_LIMITS)
         ax.set_ylim(self.AXIS_LIMITS)
@@ -137,6 +140,19 @@ class SceneBuilder(Observer, Observable):
 
         return None
 
+    def _connect_event_handlers(self) -> None:
+        # supported values are 'resize_event', 'draw_event', 'key_press_event', 'key_release_event', 'button_press_event', 'button_release_event', 'scroll_event', 'motion_notify_event', 'pick_event', 'figure_enter_event', 'figure_leave_event', 'axes_enter_event', 'axes_leave_event', 'close_event'
+        self.on_pick = self.fig.canvas.mpl_connect("pick_event", self._on_pick)
+        self.on_click = self.fig.canvas.mpl_connect(
+            "button_press_event", self._on_click
+        )
+        self.on_key = self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
+        self.fig.canvas.mpl_connect("button_release_event", self._on_button_release)
+        self.fig.canvas.mpl_connect("motion_notify_event", self._on_mouse_move)
+        self.ax.callbacks.connect("xlim_changed", self._on_axes_change)
+        self.ax.callbacks.connect("ylim_changed", self._on_axes_change)
+        return None
+    
     def _set_output_path(self, path: str, exit=False, skip_check=False) -> None:
         """Set output path to validated path. call sys.exit() if exit is True and path is invalid"""
         try:
@@ -178,23 +194,8 @@ class SceneBuilder(Observer, Observable):
         self.warning.set_visible(False)
         self._update()
 
-    def _connect_event_handlers(self) -> None:
-        # supported values are 'resize_event', 'draw_event', 'key_press_event', 'key_release_event', 'button_press_event', 'button_release_event', 'scroll_event', 'motion_notify_event', 'pick_event', 'figure_enter_event', 'figure_leave_event', 'axes_enter_event', 'axes_leave_event', 'close_event'
-        self.on_pick = self.fig.canvas.mpl_connect("pick_event", self._on_pick)
-        self.on_click = self.fig.canvas.mpl_connect(
-            "button_press_event", self._on_click
-        )
-        self.on_key = self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
-        self.fig.canvas.mpl_connect("button_release_event", self._on_button_release)
-        self.fig.canvas.mpl_connect("motion_notify_event", self._on_mouse_move)
-        # self.resize=self.fig.canvas.mpl_connect('resize_event', lambda x:print("tool triggered"))
-        self.ax.callbacks.connect("xlim_changed", self._on_axes_change)
-        self.ax.callbacks.connect("ylim_changed", self._on_axes_change)
-        return None
-    
     def _on_axes_change(self, event):
         self._reset_click_threshold()
-        # print('axes changed')
 
     def _disconnect_event_handlers(self) -> None:
         self.fig.canvas.mpl_disconnect(self.on_click)
@@ -212,19 +213,17 @@ class SceneBuilder(Observer, Observable):
         closest_building, closest_vertex_index = self._get_closest_vertex(
             [event.xdata, event.ydata]
         )
-
         # Check if the closest vertex is close enough to be selected
-        dist = distance_between_points(
-            closest_building.vertices[closest_vertex_index][:2],
-            [event.xdata, event.ydata],
-        )
-        if dist >= self.CLICK_THRESHOLD:
-            return False
-
-        self.selected_vertex = closest_vertex_index
-        self.initial_click_position = None
-        self.selected_building = closest_building
-        return True
+        vertex = closest_building.vertices[closest_vertex_index][:2]
+        click_position = [event.xdata, event.ydata]
+        distances = np.abs(vertex - click_position)
+        # Check if distances are within the tolerance for both x and y coordinates
+        if self._is_within_threshold(distances, self.CLICK_THRESHOLD):
+            self.selected_vertex = closest_vertex_index
+            self.initial_click_position = None
+            self.selected_building = closest_building
+            return True
+        return False
 
     def _get_closest_vertex(self, point):
         """Find the closest vertex to the given point."""
@@ -239,19 +238,21 @@ class SceneBuilder(Observer, Observable):
             key=lambda x: distance_between_points(x[0].vertices[x[1]][:2], point),
         )
 
+    def _is_within_threshold(self, vector:np.ndarray, threshold:np.ndarray):
+        """Check if the given vector is within the given threshold of shape (2,)"""
+        return np.all(np.abs(vector) < threshold)
+    
     def _handle_drone_movement(self, event) -> bool:
         # Check if a drone starting or ending point was clicked
-        point = [event.xdata, event.ydata]
+        point = np.array([event.xdata, event.ydata])
         for drone in self.drones:
-            start_dist = distance_between_points(drone.position[:2], point)
-            end_dist = distance_between_points(drone.goal[:2], point)
-            if (
-                start_dist < self.CLICK_THRESHOLD
-            ):  # This threshold determines how close the click should be to consider a match
+            start_dists = drone.position[:2] - point
+            end_dists = drone.goal[:2] - point
+            if self._is_within_threshold(start_dists,self.CLICK_THRESHOLD):  # This threshold determines how close the click should be to consider a match
                 self.selected_drone = drone
                 self.dragging_drone_point = "start"
                 return True
-            elif end_dist < self.CLICK_THRESHOLD:
+            elif self._is_within_threshold(end_dists, self.CLICK_THRESHOLD):
                 self.selected_drone = drone
                 self.dragging_drone_point = "end"
                 return True
@@ -329,9 +330,10 @@ class SceneBuilder(Observer, Observable):
             x_ratio = (xlim[1] - xlim[0]) / width_pixels
             y_ratio = (ylim[1] - ylim[0]) / height_pixels
 
-            # Use the larger of the two ratios to ensure tolerance covers both dimensions
-            threshold = self.PIXEL_TOLERANCE * max(x_ratio, y_ratio)
-            self.CLICK_THRESHOLD = threshold
+            # Calculate x and y tolerances separately
+            x_tolerance = self.PIXEL_TOLERANCE * x_ratio
+            y_tolerance = self.PIXEL_TOLERANCE * y_ratio
+            self.CLICK_THRESHOLD = np.array([x_tolerance,y_tolerance])
             return None
 
     

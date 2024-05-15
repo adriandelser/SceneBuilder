@@ -21,7 +21,7 @@ class UIComponents(Observable):
         button_y_val = 0.01
         self.buttons: dict[str, dict[str, plt.Axes | str | function]] = {
             "switch": {
-                "axis": self.fig.add_axes([0.01, button_y_val, 0.20, 0.05]),
+                "axis": self.fig.add_axes([0.65, button_y_val, 0.20, 0.05]),
                 "label": "Switch to Drones",
                 "callback": self.on_switch_mode,
             },
@@ -49,6 +49,42 @@ class UIComponents(Observable):
             self.buttons[key]["button"] = button
 
         self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
+        CustomTextBox = TextBox
+        ################# RESIZE BOXES #####################
+        # TextBox for setting x-axis limits
+        self.axbox_xmin = self.fig.add_axes([0.1, 0.05, 0.05, 0.04])
+        self.text_box_xmin = CustomTextBox(self.axbox_xmin, 'Xmin', initial='-5',textalignment="center")
+        self.text_box_xmin.label.set_position((0.9, -0.5))  # Move label to be above the box
+
+
+        self.axbox_xmax = self.fig.add_axes([0.9, 0.05, 0.05, 0.04])
+        self.text_box_xmax = CustomTextBox(self.axbox_xmax, 'Xmax', initial='5',textalignment="center")
+        self.text_box_xmax.label.set_position((0.9, -0.5))  # Move label to be above the box
+
+        # TextBox for setting y-axis limits
+        self.axbox_ymin = self.fig.add_axes([0.03, 0.1, 0.05, 0.04])
+        self.text_box_ymin = CustomTextBox(self.axbox_ymin, 'Ymin', initial='-5',textalignment="center")
+        self.text_box_ymin.label.set_position((0.9, -0.5))  # Move label to be above the box
+
+        self.axbox_ymax = self.fig.add_axes([0.03, 0.85, 0.05, 0.04])
+        self.text_box_ymax = CustomTextBox(self.axbox_ymax, 'Ymax', initial='5',textalignment="center")
+        self.text_box_ymax.label.set_position((0.9, 1.5))  # Move label to be above the box
+
+        
+        # # Buttons for quickly adjusting the limits
+        # self.axbutton_double = self.fig.add_axes([0.1, 0.15, 0.15, 0.05])
+        # self.button_double = plt.Button(self.axbutton_double, 'Double')
+        # self.axbutton_halve = self.fig.add_axes([0.3, 0.15, 0.15, 0.05])
+        # self.button_halve = plt.Button(self.axbutton_halve, 'Halve')
+
+        # Connect the event handlers
+        self.text_box_xmin.on_submit(self.update_limits)
+        self.text_box_xmax.on_submit(self.update_limits)
+        self.text_box_ymin.on_submit(self.update_limits)
+        self.text_box_ymax.on_submit(self.update_limits)
+        # self.button_double.on_clicked(self.double_limits)
+        # self.button_halve.on_clicked(self.halve_limits)
+
 
         #################INPUT TEXT BOX#####################
         # # create textbox, color is (r,g,b,alpha)
@@ -127,8 +163,17 @@ class UIComponents(Observable):
 
         plt.draw()  # Redraw the figure to update the visibility changes
 
-    # def modify_current_file_text(self, new_text: str) -> None:
-    #     self.current_file_text.set_text(new_text)
+    def update_limits(self, _):
+        try:
+            xmin = float(self.text_box_xmin.text)
+            xmax = float(self.text_box_xmax.text)
+            ymin = float(self.text_box_ymin.text)
+            ymax = float(self.text_box_ymax.text)
+            self.ax.set_xlim(xmin, xmax)
+            self.ax.set_ylim(ymin, ymax)
+            self.fig.canvas.draw_idle()
+        except ValueError:
+            print("Invalid input, please enter numerical values.")
 
     def on_switch_mode(self, event):
         self.notify_observers("switch_mode")
@@ -181,6 +226,46 @@ class UIComponents(Observable):
             self.show_format_options(event)
 
 
+class CustomTextBox(TextBox):
+    '''Same as normal textbox except overriding the _keypress method to call self.stop_typing
+    when enter is pressed so that the textbox is deactivated'''
+    def _keypress(self, event):
+        if self.ignore(event):
+            return
+        if self.capturekeystrokes:
+            key = event.key
+            text = self.text
+            if len(key) == 1:
+                text = (text[:self.cursor_index] + key +
+                        text[self.cursor_index:])
+                self.cursor_index += 1
+            elif key == "right":
+                if self.cursor_index != len(text):
+                    self.cursor_index += 1
+            elif key == "left":
+                if self.cursor_index != 0:
+                    self.cursor_index -= 1
+            elif key == "home":
+                self.cursor_index = 0
+            elif key == "end":
+                self.cursor_index = len(text)
+            elif key == "backspace":
+                if self.cursor_index != 0:
+                    text = (text[:self.cursor_index - 1] +
+                            text[self.cursor_index:])
+                    self.cursor_index -= 1
+            elif key == "delete":
+                if self.cursor_index != len(self.text):
+                    text = (text[:self.cursor_index] +
+                            text[self.cursor_index + 1:])
+            self.text_disp.set_text(text)
+            self._rendercursor()
+            if self.eventson:
+                self._observers.process('change', self.text)
+                if key in ["enter", "return"]:
+                    self.stop_typing()
+                    self._observers.process('submit', self.text)
+
 # NOTE currently unused, will be used for any potential user input
 class EnterTextBox(TextBox):
     def stop_typing(self, event=None):
@@ -194,3 +279,4 @@ class EnterTextBox(TextBox):
         self.capturekeystrokes = False
         self.cursor.set_visible(False)
         self.ax.figure.canvas.draw()
+        print('stop_typing')
