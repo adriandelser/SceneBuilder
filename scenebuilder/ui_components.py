@@ -37,7 +37,7 @@ class UIComponents(Observable):
             },
             "load_json": {
                 "axis": self.fig.add_axes([0.49, button_y_val, 0.15, 0.05]),
-                "label": "Load JSON",
+                "label": "Load",
                 "callback": self.on_load,
             },
         }
@@ -69,7 +69,7 @@ class UIComponents(Observable):
         #     0.86,
         #     "Current output file: ",
         #     fontsize=10,  # Makes the font larger
-        #     fontweight="bold",  # Makes the font bold
+        #     fontweight="bold",  # Makes  the font bold
         #     color="k",  # Changes the text color
         # )
 
@@ -157,7 +157,6 @@ class UIComponents(Observable):
             initialfile="scenebuilder",
             defaultextension=extension,
         )
-
         if not filename:
             return
 

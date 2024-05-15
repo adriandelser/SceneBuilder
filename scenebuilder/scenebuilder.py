@@ -187,7 +187,14 @@ class SceneBuilder(Observer, Observable):
         self.fig.canvas.mpl_connect("button_release_event", self._on_button_release)
         self.fig.canvas.mpl_connect("motion_notify_event", self._on_mouse_move)
         # self.resize=self.fig.canvas.mpl_connect('resize_event', lambda x:print("tool triggered"))
+        self.ax.callbacks.connect("xlim_changed", self._on_axes_change)
+        self.ax.callbacks.connect("ylim_changed", self._on_axes_change)
         return None
+    
+    def _on_axes_change(self, event):
+        #set self.CLICK_THRESHOLD to be 0.14 *width of new axes/width of old axes
+        # self.CLICK_THRESHOLD = 0.14 * event.width / self.fig.get_figwidth()
+        print('axes changed')
 
     def _disconnect_event_handlers(self) -> None:
         self.fig.canvas.mpl_disconnect(self.on_click)
@@ -450,7 +457,7 @@ class SceneBuilder(Observer, Observable):
             # plot the building
             self._finalize_building()
 
-        if event.key in ["cmd+z", "ctrl+z"]:
+        if event.key in ["z","cmd+z", "ctrl+z"]:
             self._undo_last_action()
 
         # if event.key in ["cmd+s", "ctrl+s"]:

@@ -76,8 +76,14 @@ scene.draw_scene()
 - **Switch between Obstacle and Drone Modes**: Press b to switch to building/obstacle mode. Press d to switch to drone/agent mode. Alternatively click the Switch button on the bottom left of the gui.
 - **Delete obstacles**: Select the obstacle and press delete or backspace. NOTE this is not yet available for drones.
 - **Clear temporary points**: To clear building vertices prior to completing the building, or to remove a drone's starting point before placing the goal, press 'esc' or 'escape'.
-- **Undo drone/obstacle placement**: To remove the last obstacle or drone that was placed, press ctrl+z.
+- **Undo drone/obstacle placement**: To remove the last obstacle or drone that was placed, press z or ctrl+z. *
 - **Reset Scene**: To reset the scene to a blank canvas, click the Reset button in the gui.
+
+**_*Note: due to a quirk in tkinter, some standard keystrokes starting with ctrl/cmd are sometimes captured by the system instead of SceneBuilder, for this reason we provide the option to use them without the leading ctrl/cmd, for example "z" instead of "ctrl/cmd + z" for undo. This applies for the following commands usually found in the 'edit' dropdown menu on most systems:  <u>undo, redo, copy, paste, cut</u>_** **
+
+**_**Not all of <u>undo, redo, copy, paste, cut</u> are currently implemented, this is a work in progress._**
+
+
 
 ## Saving Scenes
 
