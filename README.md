@@ -6,19 +6,25 @@
 
 <!-- ![Scene Example 1](/assets/scene1.png){width=10 height=10} -->
 <p align="center">
-  <img src="/assets/scene1.png" alt="First Image" width="40%" />
-  <img src="/assets/scene2.png" alt="Second Image" width="40%" />
+  <img src="/assets/scene1.png" alt="Example Scene 1" width="40%" />
+  <img src="/assets/scene2.png" alt="Example Scene 2" width="40%" />
 </p>
+
 
 ## Installation
 
-To install SceneBuilder, run the following command:
+To install SceneBuilder, you have two options:
 
-```bash
-pip install scenebuilder
-```
+1. **Using pip (recommended)**:
+   ```bash
+   pip install scenebuilder
+   ```
 
-This command installs SceneBuilder along with numpy and matplotlib, ensuring that everything needed to run the GUI is properly set up.
+2. **From source**:
+   ```bash
+   git clone git@github.com:enac-drones/scenebuilder.git
+   pip install -e .
+   ```
 
 ## Prerequisites
 
@@ -53,9 +59,10 @@ scene = SceneBuilder()
 scene.draw_scene()
 ```
 
-Load in an existing compatible json file for modification:
+Alternatively, load in an existing compatible json file for modification:
 
 ```python
+scene = SceneBuilder()
 scene.load_scene("path/to/your_file.json")
 scene.draw_scene()
 ```
