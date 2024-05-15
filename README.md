@@ -2,7 +2,7 @@
 
 ## Overview
 
-**SceneBuilder** is a Python package that provides a Matplotlib-based GUI for designing 2D test environments in a 10x10m grid for use in multiagent path planning algorithms. Users can draw polygons to represent obstacles and arrows to indicate the starting and ending points of each agent's path.
+**SceneBuilder** is a Python package that provides a Matplotlib-based GUI for designing 2D test environments for use in multiagent path planning algorithms. Users can draw polygons to represent obstacles and arrows to indicate the starting and ending points of each agent's path.
 
 <!-- ![Scene Example 1](/assets/scene1.png){width=10 height=10} -->
 <p align="center">
