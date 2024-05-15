@@ -27,6 +27,7 @@ class SceneBuilder(Observer, Observable):
     CLICK_THRESHOLD = 0.14
     FIG_SIZE = (8, 8.5)
     AXIS_LIMITS = (-5, 5)
+    PIXEL_TOLERANCE = 20 #within this many pixels a click is considered "on" a line or point
 
     def __init__(self):
         # initialise Observable (Observer has no init)
@@ -192,9 +193,8 @@ class SceneBuilder(Observer, Observable):
         return None
     
     def _on_axes_change(self, event):
-        #set self.CLICK_THRESHOLD to be 0.14 *width of new axes/width of old axes
-        # self.CLICK_THRESHOLD = 0.14 * event.width / self.fig.get_figwidth()
-        print('axes changed')
+        self._reset_click_threshold()
+        # print('axes changed')
 
     def _disconnect_event_handlers(self) -> None:
         self.fig.canvas.mpl_disconnect(self.on_click)
@@ -314,14 +314,36 @@ class SceneBuilder(Observer, Observable):
             self._update()
         return None
 
-    def _add_new_vertex(self, event) -> bool:
+    
+    def _reset_click_threshold(self)->None:
+            """Convert pixel tolerance to data coordinates and call Obstacle's insert_vertex"""
+            # Get the axis limits
+            xlim = self.ax.get_xlim()
+            ylim = self.ax.get_ylim()
+
+            # Calculate the display-to-data ratio for both x and y axes
+            bbox = self.ax.get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
+            width_pixels = bbox.width * self.fig.dpi
+            height_pixels = bbox.height * self.fig.dpi
+
+            x_ratio = (xlim[1] - xlim[0]) / width_pixels
+            y_ratio = (ylim[1] - ylim[0]) / height_pixels
+
+            # Use the larger of the two ratios to ensure tolerance covers both dimensions
+            threshold = self.PIXEL_TOLERANCE * max(x_ratio, y_ratio)
+            self.CLICK_THRESHOLD = threshold
+            return None
+
+    
+    def _add_new_vertex(self, event):
+        """Tries to add a new vertex if user clicks near an building edge"""
+        position = (event.xdata, event.ydata)
         for building in self.buildings:
-            if building.insert_vertex((event.xdata, event.ydata)):
+            if building.insert_vertex(position, tolerance = self.CLICK_THRESHOLD):
                 # Redraw the building if a vertex was added
                 self.patch_manager.redraw_building(building)
                 self._update()
                 return True
-        return False
 
     def _handle_deselect(self, event):
         if self.selected_building:

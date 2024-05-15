@@ -105,31 +105,33 @@ class Obstacle(Entity):
         for vertex in self.vertices:
             vertex += delta
 
-    def insert_vertex(self, position, tolerance=0.1):
-        """Insert a vertex at a given position if near an edge"""
-        for i in range(len(self.vertices)):
-            start_point = self.vertices[i]
-            end_point = self.vertices[(i + 1) % len(self.vertices)]
+    def insert_vertex(self, position, tolerance):
+        """Insert a vertex at a given position if near an edge (position and tolerance in data coordinates)"""
+        position = np.array(position)
 
-            if self._point_near_edge(position, start_point, end_point, tolerance):
-                self.vertices = np.insert(self.vertices, i + 1, position, axis=0)
-                return True
+        # Compute vectors
+        start_points = self.vertices
+        end_points = np.roll(self.vertices, -1, axis=0)
+        line_vectors = end_points - start_points
+        point_vectors = position - start_points
+
+        # Compute projections
+        line_norms = np.linalg.norm(line_vectors, axis=1)
+        proj_lengths = np.einsum('ij,ij->i', point_vectors, line_vectors) / line_norms
+        valid_projs = (proj_lengths >= 0) & (proj_lengths <= line_norms)
+
+        # Compute distances
+        proj_vectors = np.outer(proj_lengths, np.ones(2)) * line_vectors / line_norms[:, None]
+        distances = np.linalg.norm(point_vectors - proj_vectors, axis=1)
+
+        # Find the edge with minimum distance within tolerance
+        near_edges = distances < tolerance
+        if np.any(near_edges & valid_projs):
+            i = np.where(near_edges & valid_projs)[0][0]
+            self.vertices = np.insert(self.vertices, i + 1, position, axis=0)
+            return True
         return False
-
-    def _point_near_edge(self, point, start, end, tolerance):
-        """Check if the point is near the edge defined by start and end points"""
-        # Compute the distance of the point from the line segment
-        line_vector = np.array(end) - np.array(start)
-        point_vector = np.array(point) - np.array(start)
-        # Compute the projection of point_vector onto line_vector
-        proj_length = np.dot(point_vector, line_vector) / np.linalg.norm(line_vector)
-
-        if 0 <= proj_length <= np.linalg.norm(line_vector):
-            # The projection is on the line segment
-            proj_vector = proj_length * line_vector / np.linalg.norm(line_vector)
-            distance = np.linalg.norm(point_vector - proj_vector)
-            return distance < tolerance
-        return False
+    
 
     def contains_point(self, point):
         polygon = Polygon(self.vertices)
