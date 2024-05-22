@@ -4,18 +4,18 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
-from .entities import Drone, Obstacle
-from .utils import (
+from scenebuilder.entities import Drone, Obstacle
+from scenebuilder.utils import (
     distance_between_points,
     create_json,
     get_case_from_dict,
     convert_from_geojson,
 )
-from .utils import load_from_json, validate_json_path
-from .patch_manager import PatchManager
-from .actions_stack import ActionsStack
-from .ui_components import UIComponents
-from .observer_utils import Observer, Observable
+from scenebuilder.utils import load_from_json, validate_json_path
+from scenebuilder.patch_manager import PatchManager
+from scenebuilder.actions_stack import ActionsStack
+from scenebuilder.ui_components import UIComponents
+from scenebuilder.observer_utils import Observer, Observable
 from threading import Timer
 from pathlib import Path
 import traceback

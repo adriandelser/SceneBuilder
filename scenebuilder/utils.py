@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 # from scenebuilder.json_utils import dump_to_json
-from .entities import Drone, Obstacle
+from scenebuilder.entities import Drone, Obstacle
 
 # file to store useful json utilities
 import json, os, sys

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from .observer_utils import Observable
+from scenebuilder.observer_utils import Observable
 from matplotlib.widgets import TextBox
 from tkinter import Tk, filedialog
 from pathlib import Path

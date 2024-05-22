@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from typing import List
 import numpy as np
-from .entities import Obstacle, Drone
-from .patches import ObstaclePatch, DronePatch, Marker
+from scenebuilder.entities import Obstacle, Drone
+from scenebuilder.patches import ObstaclePatch, DronePatch, Marker
 
 
 class PatchManager:
