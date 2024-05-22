@@ -1,1 +1,1 @@
-from .scenebuilder import SceneBuilder
+from scenebuilder.scenebuilder import SceneBuilder
