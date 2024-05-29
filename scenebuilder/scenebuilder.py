@@ -361,8 +361,6 @@ class SceneBuilder(Observer, Observable):
         # if not event.xdata or not event.ydata:
         #     return
         if event.inaxes != self.ax:
-            import sys
-            print(sys.version)
             return
 
         # handle moving building vertices
