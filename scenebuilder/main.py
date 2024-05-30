@@ -12,6 +12,13 @@ def main():
         help="Load a scene from a JSON file at the specified path",
     )
 
+    parser.add_argument(
+        "-s",
+        "--sidelength",
+        type=int,
+        help="Specify new arena sidelength in meters, eg: scenebuilder -s 10",
+    )
+
     args = parser.parse_args()
 
     app = SceneBuilder()
@@ -20,6 +27,9 @@ def main():
     if args.load:
         app.load_scene(args.load)
         loaded_file = args.load
+    if args.sidelength:
+        l = args.sidelength
+        app.set_lims((-l/2, l/2))
 
     intro_message = (
         "Welcome to the SceneBuilder! \n"

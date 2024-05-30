@@ -63,6 +63,10 @@ class SceneBuilder(Observer, Observable):
         """Draw the scene."""
         plt.show()
 
+    def set_lims(self, new_lims:tuple):
+        self.ax.set_xlim(new_lims)
+        self.ax.set_ylim(new_lims)
+
     def _plot_setup(self):
         fig = plt.figure(figsize=self.FIG_SIZE)
         ax = fig.add_subplot(111)
