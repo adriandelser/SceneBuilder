@@ -28,7 +28,7 @@ class SceneBuilder(Observer, Observable):
     FIG_SIZE = (8, 8.5)
     AXIS_LIMITS = (-5, 5)
     PIXEL_TOLERANCE = 20 #within this many pixels a click is considered "on" a line or point
-
+    HEIGHT = 1.2 # obstacle height
     def __init__(self):
         # initialise Observable (Observer has no init)
         super().__init__()
@@ -634,7 +634,7 @@ class SceneBuilder(Observer, Observable):
         else:
             # green warning if at least one drone
             self._show_warning(f"Saving to file: \n{path}", duration=3, color="g")
-        create_json(path, self.buildings, self.drones)
+        create_json(path, self.buildings, self.drones, self.HEIGHT)
 
     def _call(self, event: str, *args, **kwargs):
         """class called by observers triggered by button or text_box, see ui_components.py and observer_utils.py"""

@@ -9,14 +9,21 @@ def main():
         "-l",
         "--load",
         type=str,
-        help="Load a scene from a JSON file at the specified path",
+        help="Load a scene from a JSON file at the specified path eg: scenebuilder -l filename.json",
     )
 
     parser.add_argument(
         "-s",
         "--sidelength",
-        type=int,
+        type=float,
         help="Specify new arena sidelength in meters, eg: scenebuilder -s 10",
+    )
+
+    parser.add_argument(
+        "-oh",
+        "--height",
+        type=float,
+        help="Specify the height of all obstacles, eg: scenebuilder -oh 2",
     )
 
     args = parser.parse_args()
@@ -30,6 +37,8 @@ def main():
     if args.sidelength:
         l = args.sidelength
         app.set_lims((-l/2, l/2))
+    if args.height:
+        app.HEIGHT = args.height
 
     intro_message = (
         "Welcome to the SceneBuilder! \n"

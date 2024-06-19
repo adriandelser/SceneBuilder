@@ -8,13 +8,16 @@ from pathlib import Path
 import os
 
 # Initialize Tkinter just once
-root = Tk()
-root.withdraw()  # Hide the main window
+# root = Tk()
+# root.withdraw()  # Hide the main window
 
 
 class UIComponents(Observable):
+    root = Tk()
+    root.withdraw()  # Hide the main window
     def __init__(self, ax: plt.Axes):
         super().__init__()
+        # Initialize Tkinter just once
         self.ax = ax
         self.fig = ax.figure
         #################BOTTOM BUTTONS#####################

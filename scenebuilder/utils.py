@@ -54,12 +54,11 @@ def get_case_from_dict(case: dict) -> tuple[list[Drone], list[Obstacle]]:
     return vehicles, buildings
 
 
-def create_json(path: str, buildings: list[Obstacle], drones: list[Drone]) -> None:
+def create_json(path: str, buildings: list[Obstacle], drones: list[Drone], height:float=1.2) -> None:
     """Creates the json with the case info and writes it to file at path"""
     p = Path(path)
     # Convert path to absolute path for checking existence and permissions
     abs_path = p.resolve()
-    height = 1.2
     # this line adds a third dimension to the x,y coordinates of the building patches and creates a building object from each patch
 
     buildings = [
