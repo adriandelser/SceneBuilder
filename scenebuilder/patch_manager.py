@@ -109,3 +109,31 @@ class PatchManager:
         self.remove_temp_drone_start()
         self.building_patches.clear()
         self.drone_patches.clear()
+
+    # def _on_hover(self, event, thr):
+    #     markers = [marker for b in self.building_patches.values() for marker in b.markers]
+    #     markers.extend([marker for d in self.drone_patches.values() for marker in d.marker_start + d.marker_end])
+    #     # Check if the point is on any marker and change its color to red if true
+    #     for idx, marker in enumerate(markers):
+    #         contains, _ = marker.marker.contains(event)
+    #         print(contains, _)
+    #         if contains:  # Adjust the threshold as necessary
+    #             print('true', idx)
+    #             marker.set(markerfacecolor='red')
+    #         return True
+    #     return False
+
+    def marker_hover(self, event, threshold):
+        markers = [marker for b in self.building_patches.values() for marker in b.markers]
+        markers.extend([marker for d in self.drone_patches.values() for marker in [d.marker_start, d.marker_end]])
+
+        # Check if the mouse event is on any marker and change its color to red if true
+        for idx, marker in enumerate(markers):
+            contains, _ = marker.marker.contains(event)
+            if contains:  # If the event is within the marker's area
+                marker.set(markerfacecolor='red', markeredgecolor='red')
+                return True
+            elif marker.marker.get_markerfacecolor() == 'red':
+                marker.reset_style()
+                return True
+        return False

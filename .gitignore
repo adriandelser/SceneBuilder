@@ -1,3 +1,5 @@
+# my experimental directory
+experimental/
 # ignore any json files in the main project directory 
 # json files elsewhere are ok
 /*.json

@@ -412,6 +412,10 @@ class SceneBuilder(Observer, Observable):
 
         self.initial_click_position = [event.mouseevent.xdata, event.mouseevent.ydata]
 
+    def _on_hover(self, point):
+        return self.patch_manager.marker_hover(point, self.CLICK_THRESHOLD)
+
+
     def _on_mouse_move(self, event):
         # check to make sure the mouse is still in the main axes
         # and not over a button or other axes object
@@ -420,6 +424,9 @@ class SceneBuilder(Observer, Observable):
             return
 
         point = [event.xdata, event.ydata]
+        
+        if self._on_hover(event):
+            self._update()
 
         ##########################################################################################
         # move the vertex if one is selected

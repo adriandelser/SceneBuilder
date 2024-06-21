@@ -53,9 +53,14 @@ class Marker:
         self.style = style
         self.marker: Line2D = None
         self.create_marker(**kwargs)
+        self.original_marker = self.marker.get_marker()
+        self.original_facecolor = self.marker.get_markerfacecolor()
+        self.original_edgecolor = self.marker.get_markeredgecolor()
+        self.original_color = self.marker.get_color()
+        self.original_kwargs = kwargs.copy()  # Store the original kwargs
 
     def create_marker(self, **kwargs) -> Line2D:
-        self.marker = plt.plot(*self.position, self.style, **kwargs)[0]
+        self.marker, = plt.plot(*self.position, self.style, **kwargs)
         return self.marker
 
     def update_position(self, new_position: tuple):
@@ -68,6 +73,16 @@ class Marker:
     
     def set(self, **kwargs):
         self.marker.set(**kwargs)
+
+    def reset_style(self):
+        # Reset the marker style to the original
+        self.marker.set_marker(self.original_marker)
+        self.marker.set_color(self.original_color)
+        self.marker.set_markerfacecolor(self.original_facecolor)
+        self.marker.set_markeredgecolor(self.original_edgecolor)
+        self.set(**self.original_kwargs)
+
+
 
 
 class DronePatch:
@@ -85,10 +100,10 @@ class DronePatch:
     def _create_patches(self) -> tuple:
         # plot the arrow
         self.marker_start = Marker(
-            self.drone.position[:2], "b*"
+            self.drone.position[:2], "g*"
         )  # Initial position in blue
 
-        self.marker_end = Marker(self.drone.goal[:2], "r*")  # Goal position in red
+        self.marker_end = Marker(self.drone.goal[:2], "b*")  # Goal position in red
 
         # Add an arrow with a line using the 'arrow' function
         self.arrow = Arrow(self.drone.position[:2], self.drone.goal[:2], self.ax)
