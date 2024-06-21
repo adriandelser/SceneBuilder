@@ -13,11 +13,12 @@ class PatchManager:
         self.building_patches: dict[Obstacle, ObstaclePatch] = {}
         self.drone_patches: dict[Drone, DronePatch] = {}
         # self.temp_drone_starts:list[Line2D] = []
-        self.current_building_vertices: list[Line2D] = []
+        self.current_building_vertices: list[Marker] = []
         self.drone_start = None
 
     def add_building_patch(self, building: Obstacle, **kwargs) -> None:
-        patch = ObstaclePatch(
+        building_patch = ObstaclePatch(
+            self.ax,
             building,
             edgecolor=kwargs.get("edgecolor", (0, 0, 0, 1)),
             facecolor=kwargs.get("facecolor", (0, 0, 1, 0.5)),
@@ -25,11 +26,11 @@ class PatchManager:
             linewidth=kwargs.get("linewidth", 2.0),
             picker=kwargs.get("picker", True),
         )
-        self.ax.add_patch(patch)
-        self.building_patches[building] = patch
+        # self.ax.add_patch(patch)
+        self.building_patches[building] = building_patch
 
     def add_building_vertex(self, vertex: tuple) -> None:
-        point = Marker(vertex, "go").create_marker()
+        point = Marker(vertex, "go")
         self.current_building_vertices.append(point)
 
     def get_building_patch(self, building: Obstacle) -> ObstaclePatch:
@@ -38,10 +39,10 @@ class PatchManager:
         """
         return self.building_patches[building]
 
-    def get_building_from_patch(self, patch: ObstaclePatch) -> Obstacle:
+    def get_building_from_patch(self, patch: plt.Polygon) -> Obstacle:
         """Obtains the building from the patch passed as argument"""
         for building, building_patch in self.building_patches.items():
-            if building_patch == patch:
+            if building_patch.polygon == patch:
                 # call the selected building setter to highlight the building
                 return building
 
@@ -50,9 +51,8 @@ class PatchManager:
         if not len(self.current_building_vertices) >= 3:
             return
         vertices = np.array(
-            [point.get_xydata() for point in self.current_building_vertices]
+            [point.position for point in self.current_building_vertices]
         )
-        vertices = vertices.squeeze(axis=1)
         building = Obstacle(vertices)
         self.add_building_patch(building)
         self.clear_building_vertices()
@@ -64,12 +64,12 @@ class PatchManager:
     def add_drone_patch(self, drone: Drone, **kwargs) -> None:
         # Similar logic for adding drone patches
         drone_patch = DronePatch(drone, self.ax)
-        patches = drone_patch.create_patches()
+        # patches = drone_patch.create_patches()
         self.drone_patches[drone] = drone_patch
 
     def add_temp_drone_start(self, point: list) -> None:
         # self.temp_drone_starts.append(point)
-        self.drone_start = Marker(point, style="ko").create_marker()
+        self.drone_start = Marker(point, style="ko")
 
     def remove_temp_drone_start(self) -> None:
         if self.drone_start:

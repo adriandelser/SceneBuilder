@@ -41,23 +41,33 @@ class Arrow:
 
         self.arrow.set_data(x=new_x_start, y=new_y_start, dx=dx, dy=dy)
 
+    def remove(self):
+        self.arrow.remove()
+
 
 class Marker:
     """Create an icon or marker patch to plot"""
 
-    def __init__(self, position: ArrayLike, style: str) -> None:
+    def __init__(self, position: ArrayLike, style: str, **kwargs) -> None:
         self.position = np.array(position)
         self.style = style
         self.marker: Line2D = None
+        self.create_marker(**kwargs)
 
-    def create_marker(self) -> Line2D:
-        self.marker = plt.plot(*self.position, self.style)[0]
+    def create_marker(self, **kwargs) -> Line2D:
+        self.marker = plt.plot(*self.position, self.style, **kwargs)[0]
         return self.marker
 
     def update_position(self, new_position: tuple):
         self.position = new_position
         self.marker.set_xdata([self.position[0]])
         self.marker.set_ydata([self.position[1]])
+
+    def remove(self):
+        self.marker.remove()
+    
+    def set(self, **kwargs):
+        self.marker.set(**kwargs)
 
 
 class DronePatch:
@@ -70,8 +80,9 @@ class DronePatch:
 
         self.arrow: Arrow = None
         self.ax = ax
+        self._create_patches()
 
-    def create_patches(self) -> tuple:
+    def _create_patches(self) -> tuple:
         # plot the arrow
         self.marker_start = Marker(
             self.drone.position[:2], "b*"
@@ -83,17 +94,20 @@ class DronePatch:
         self.arrow = Arrow(self.drone.position[:2], self.drone.goal[:2], self.ax)
 
         # self.patches = (self.marker_start, self.marker_end, self.arrow)
-        return (
-            self.marker_start.create_marker(),
-            self.marker_end.create_marker(),
-            self.arrow.create_arrow(),
-        )
+        # self.marker_start.create_marker()
+        # self.marker_end.create_marker()
+        self.arrow.create_arrow()
+        # return (
+        #     self.marker_start.create_marker(),
+        #     self.marker_end.create_marker(),
+        #     self.arrow.create_arrow(),
+        # )
 
     def remove(self) -> None:
         """Remove the three patches"""
-        self.marker_start.marker.remove()
-        self.marker_end.marker.remove()
-        self.arrow.arrow.remove()
+        self.marker_start.remove()
+        self.marker_end.remove()
+        self.arrow.remove()
 
     def patches(self):
         return self.marker_start.marker, self.marker_end.marker, self.arrow.arrow
@@ -104,31 +118,54 @@ class DronePatch:
         self.arrow.update_arrow_position(self.drone.position[:2], self.drone.goal[:2])
 
 
-class ObstaclePatch(Polygon):
+class ObstaclePatch:
     """
     Example usage:
-    patch = BuildingPatch(ax, building_instance, facecolor='blue', edgecolor='red', linewidth=2.0)
+    patch = ObstaclePatch(ax, building_instance, facecolor='blue', edgecolor='red', linewidth=2.0)
     """
 
-    def __init__(self, building: Obstacle, **kwargs) -> None:
-        super().__init__(building.vertices, **kwargs)
-        self.vertices = self.get_xy()
-        # Storing original colors
-        self.original_facecolor = self.get_facecolor()
-        self.original_edgecolor = self.get_edgecolor()
+    def __init__(self, ax:plt.Axes, building: Obstacle, **kwargs) -> None:
+        self.ax = ax
         self.building = building
+        self.polygon = Polygon(building.vertices, **kwargs)
+        self.ax.add_patch(self.polygon)
+        self.vertices = self.polygon.get_xy()[:-1]
+        
+        # Create markers for each vertex
+        self.markers = self.create_markers()
+        # Storing original colors
+        self.original_facecolor = self.polygon.get_facecolor()
+        self.original_edgecolor = self.polygon.get_edgecolor()
 
     def select(self):
         """Change appearance to represent selection."""
-        # Change to a transparent red (or whatever visual cue you want for selection)
-        self.set_facecolor((1, 0.4, 1, 0.7))
-        self.set_edgecolor("black")
+        self.polygon.set_facecolor((1, 0.4, 1, 0.7))
+        self.polygon.set_edgecolor("black")
 
     def deselect(self):
         """Revert appearance to the original state."""
-        self.set_facecolor(self.original_facecolor)
-        self.set_edgecolor(self.original_edgecolor)
+        self.polygon.set_facecolor(self.original_facecolor)
+        self.polygon.set_edgecolor(self.original_edgecolor)
+
+    def remove(self):
+        self.polygon.remove()
+        for marker in self.markers:
+            marker.remove()
+
+    def create_markers(self, **kwargs):
+        markers = [Marker(vertex, 'bH', **kwargs) for vertex in self.vertices]
+        return markers
 
     def update_visual(self):
         """Update the visual representation based on the building state."""
-        self.set_xy(self.building.vertices)
+        self.vertices = self.building.vertices
+        self.polygon.set_xy(self.vertices)
+        if self.vertices.shape[0] != len(self.markers):
+            for marker in self.markers:
+                marker.remove()
+            # self.markers = self.create_markers(markerfacecolor='None', markeredgecolor='b',markeredgewidth=3)
+            self.markers = self.create_markers()
+
+        else:
+            for marker, vertex in zip(self.markers, self.building.vertices):
+                marker.update_position(vertex)

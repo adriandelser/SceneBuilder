@@ -102,11 +102,37 @@ class Obstacle(Entity):
         Args:
             delta (ArrayLike): 2D array
         """
-        for vertex in self.vertices:
-            vertex += delta
+        self.vertices+=delta
 
-    def insert_vertex(self, position, tolerance):
-        """Insert a vertex at a given position if near an edge (position and tolerance in data coordinates)"""
+    # def insert_vertex(self, position, tolerance):
+    #     """Insert a vertex at a given position if near an edge (position and tolerance in data coordinates)"""
+    #     position = np.array(position)
+
+    #     # Compute vectors
+    #     start_points = self.vertices
+    #     end_points = np.roll(self.vertices, -1, axis=0)
+    #     line_vectors = end_points - start_points
+    #     point_vectors = position - start_points
+
+    #     # Compute projections
+    #     line_norms = np.linalg.norm(line_vectors, axis=1)
+    #     proj_lengths = np.einsum('ij,ij->i', point_vectors, line_vectors) / line_norms
+    #     valid_projs = (proj_lengths >= 0) & (proj_lengths <= line_norms)
+
+    #     # Compute distances
+    #     proj_vectors = np.outer(proj_lengths, np.ones(2)) * line_vectors / line_norms[:, None]
+    #     distances = np.linalg.norm(point_vectors - proj_vectors, axis=1)
+
+    #     # Find the edge with minimum distance within tolerance
+    #     near_edges = distances < tolerance
+    #     if np.any(near_edges & valid_projs):
+    #         i = np.where(near_edges & valid_projs)[0][0]
+    #         self.vertices = np.insert(self.vertices, i + 1, position, axis=0)
+    #         return True
+    #     return False
+        
+    def find_insert_index(self, position:ArrayLike, tolerance:float)->int|None:
+        """Check if a vertex can be inserted at a given position and return the index if possible."""
         position = np.array(position)
 
         # Compute vectors
@@ -128,10 +154,13 @@ class Obstacle(Entity):
         near_edges = distances < tolerance
         if np.any(near_edges & valid_projs):
             i = np.where(near_edges & valid_projs)[0][0]
-            self.vertices = np.insert(self.vertices, i + 1, position, axis=0)
-            return True
-        return False
-    
+            return i + 1
+        return None
+
+    def insert_vertex(self, position, index):
+        """Insert a vertex at the given index."""
+        self.vertices = np.insert(self.vertices, index, position, axis=0)
+
 
     def contains_point(self, point):
         polygon = Polygon(self.vertices)

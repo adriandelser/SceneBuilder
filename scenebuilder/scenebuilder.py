@@ -343,7 +343,9 @@ class SceneBuilder(Observer, Observable):
         """Tries to add a new vertex if user clicks near an building edge"""
         position = (event.xdata, event.ydata)
         for building in self.buildings:
-            if building.insert_vertex(position, tolerance = self.CLICK_THRESHOLD):
+            index = building.find_insert_index(position, self.CLICK_THRESHOLD)
+            if index:
+                building.insert_vertex(position, index)
                 # Redraw the building if a vertex was added
                 self.patch_manager.redraw_building(building)
                 self._update()
@@ -403,6 +405,7 @@ class SceneBuilder(Observer, Observable):
         # Check if the picked artist is a Polygon (optional but can be useful)
         if not isinstance(event.artist, plt.Polygon):
             return
+
         # polygon = event.artist
         building = self.patch_manager.get_building_from_patch(event.artist)
         self.selected_building = building
