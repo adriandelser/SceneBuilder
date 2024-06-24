@@ -425,8 +425,7 @@ class SceneBuilder(Observer, Observable):
 
         point = [event.xdata, event.ydata]
         
-        if self._on_hover(event):
-            self._update()
+        
 
         ##########################################################################################
         # move the vertex if one is selected
@@ -468,6 +467,9 @@ class SceneBuilder(Observer, Observable):
             self.initial_click_position = point
 
             # Redraw to show the moved building
+            self._update()
+
+        elif self._on_hover(event):
             self._update()
 
     def _on_button_release(self, event):
